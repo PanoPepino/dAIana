@@ -1,8 +1,11 @@
 """Main CLI entry point for Daiana"""
 
 import click
-from daiana.compile import compile_command
-# from daiana.erase import erase_command
+from daiana.saver import *
+from daiana.shower import *
+from daiana.commands_cli.saver_cli import register_save_command
+from daiana.commands_cli.shower_cli import register_show_command
+from daiana.commands_cli.updater_cli import register_update_command
 
 
 @click.group()
@@ -18,14 +21,10 @@ def cli():  # This is what appears when you call the package --help
     pass
 
 
-@cli.command(name="compile")  # this is what appears when you call daiana compile --help
-@click.option('--input-dir', '-i', type=click.Path(exists=True), help='Input directory')
-@click.option('--output-dir', '-o', type=click.Path(), help='Output directory')
-@click.option('--clean', is_flag=True, help='Clean auxiliary files')
-def compile_cmd(input_dir, output_dir, clean):
-    """Compile CV + CL interactively."""
-    compile_command(input_dir, output_dir, clean)
+register_save_command(cli)
+register_show_command(cli)
+register_update_command(cli)
 
 
 if __name__ == '__main__':
-   cli()
+    cli()

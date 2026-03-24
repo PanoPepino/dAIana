@@ -2,6 +2,9 @@
 
 import re
 from pathlib import Path
+import click
+
+from daiana.allowed import STATUS_COLORS
 
 
 def latex_escape(text):
@@ -12,7 +15,6 @@ def latex_escape(text):
 
 
 def replace_newcommand(tex_content, command_name, new_value, escape=True):
-    """DEBUG VERSION - shows exactly what happens."""
     print(f"\n🔍 DEBUG replace_newcommand:")
     print(f"  Command: {command_name}")
     print(f"  Old value target: {new_value}")
@@ -45,3 +47,45 @@ def read_tex_file(file_path):
 
 def write_tex_file(file_path, content):
     Path(file_path).write_text(content, encoding='utf-8')
+
+
+def rewrite_filename(name: str) -> str:
+
+    name = name.strip().lower()
+    # Replace any sequence of non-alphanumeric characters with underscore
+    name = re.sub(r"[^a-z0-9]+", "_", name)
+    # Remove leading/trailing underscores
+    name = name.strip("_")
+    return name or "default"
+
+
+def check_dir_exist() -> Path:
+    """
+    This function checks if a given folder exists. If not, creates it.
+
+    Returns:
+        Path: the current direction / job_tracking.
+    """
+
+    original_dir = Path.cwd()
+    data_dir = original_dir/'job_tracking'
+    data_dir.mkdir(exist_ok=True)
+    return data_dir
+
+
+def history_formatter(history: str) -> str:
+
+    parts = [p.strip() for p in history.split("|") if p.strip()]
+    colored_pieces = []
+
+    for part in parts:
+
+        status, date = part.split(":", 1)
+        status = status.strip()
+        date = date.strip()
+
+        color = STATUS_COLORS.get(status, 'white')
+        colored_date = click.style(date, fg=color)
+        colored_pieces.append(f"{colored_date}")
+
+    return click.style(" | ", fg='magenta').join(colored_pieces)
