@@ -53,7 +53,7 @@ Cover letter mode asks two extra prompts: your tailored background and the compa
 
 ---
 
-### 🩵 `daiana save`
+### 🔵 `daiana save`
 
 Manually saves a job application to a per-career CSV file, without compiling a document. Useful when you apply externally and just want to log it.
 
