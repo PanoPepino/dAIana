@@ -1,0 +1,67 @@
+\documentclass[11pt,a4paper,sans]{moderncv}
+
+% To compile through VS code. Basic input for document template and letter variations
+\input{loader/preamble.tex}
+\input{loader/variants.tex}  
+
+% Observe that the TEXINPUTS commands MUST be changed in setting.json (when shift + cmd + P) if the folder arrangement changes (i.e. this template or any other goes inside a folder in the same dir as cls/ or loader/)
+
+\newcommand{\rolename}{job_position}   % To refer to your current job pos
+\newcommand{\skills}{Skill 1, Skill 2} % To be modified when modular.
+\newgeometry{top=0.5cm,left=2cm,right=2cm,bottom=1.8cm}  % Slim top
+
+
+
+\name{\textcolor{white}{John}}{\textcolor{white}{Doe}} % Needs to be changed with some init
+\email{johndoe@gmail.com}
+\social[whatsapp]{+123456789}
+\social[linkedin]{johndoe}
+\social[github]{JohnDoe}
+\photo[][0pt]{}  
+
+
+
+\begin{document}
+
+\makecvtitle
+
+\vspace{-0.0cm}
+
+\section{Summary}
+\begin{tcolorbox}[arc=0.5mm, colback=color3!10!white, colframe=color3!70!]
+      I am the best \rolename
+\end{tcolorbox}
+
+\section{Technical Skills \& Competencies}
+\begin{itemize}
+\item \textbf{Set of Skills 1:} 
+      \begin{itemize}
+            \item \skills
+      \end{itemize}
+
+\item \textbf{Languages:} \textit{Zulu} (Native), \textit{English} (C2)
+\end{itemize}
+
+\vspace{0.2cm}
+
+\section{Projects}
+\begin{itemize}
+\item \textcolor{color3}{\textbf{Project 1}:}
+\begin{itemize}
+      \item My own project
+\end{itemize}
+\end{itemize}
+
+\vspace{0.2cm}
+\section{Work Experience}
+\cventry{2000--2026}{\textcolor{color3}{God}}{Heaven}{}{()}{
+\begin{itemize}
+\item 
+\end{itemize}
+}
+\vspace{0.2cm}
+\section{Education}
+\cventry{2000--2026}{\textcolor{color3}{Ph.D of life}}{Hell}{}{}{}
+
+
+\end{document}

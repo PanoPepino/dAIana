@@ -1,0 +1,64 @@
+\documentclass[11pt,a4paper,sans]{moderncv}
+
+
+% To compile through VS code. Basic input for document template and letter variations
+\input{./loader/preamble.tex}
+\input{./loader/variants.tex}  
+
+% Observe that the TEXINPUTS commands MUST be changed in setting.json (when shift + cmd + P) if the folder arrangement changes (i.e. this template or any other goes inside a folder in the same dir as cls/ or loader/)
+
+% Basic heading letter input
+\name{John}{\textcolor{color1}{DOE}}
+\email{johndoe@gmail.com}
+\social[github]{JohnDoe}
+\social[whatsapp]{+123456789}
+\social[linkedin]{johndoe}
+
+% The important Stuff. Changing each entry of these commands, you will have access to letters for a given job position, company and variant (which proffesional path to target)
+% With jobaddon, you can add specific final sentences to the 3rd paragraph to suit the company + role advertisment.
+
+
+\newcommand{\companyname}{company_name}
+\newcommand{\rolename}{job_position}
+\newcommand{\companychallenge}{company_challenge}
+\newcommand{\background}{your_background}
+\newcommand{\bodyvariant}{cp_latex}
+
+
+
+% The simple body of the letter to be loaded, including the header and stuff of the like.
+\begin{document}
+\recipient{Hiring Manager}{\companyname}
+\date{\today}
+\subject{Application for \rolename}
+\opening{Dear Hiring Manager at \companyname,}
+\closing{Yours sincerely,}
+\vspace{-0.5cm}
+\makelettertitle
+\justifying
+\setlength{\parindent}{6pt}
+\setlength{\parskip}{6pt}
+\everypar{\hskip\parindent}
+
+% This is the general body of the letter. Here you can write your overall common text for all letters. You can use the following commands:
+
+% 1) \rolename\  The job title you are applying for
+% 2) \companyname\ The name of the company
+% 3) \background \Your background. This could be a nice ending sentence in the first paragraph. First, you refer to your background (not fixed input, can vary in every iteration) and then...
+% 4) \companychallenge \You relate your background to the challenge of the company you are applying for!
+
+
+Hello! I am applying for the offered \rolename\ position at \companyname. I believe my background in \background\ can contribute the most to \companyname's challenges to \companychallenge.
+
+% Here you write more common shit.
+Lore Ipsum... 
+
+% Here comes the good thing. You have a variant. With this variant, you can call different paragraphs depending on the path that suits the postion the most! In this way, you are adding a body to the letter that is more fine tuned for the position.
+\bodyvariant
+
+% And then you add more paragraph(s) that are common to all the positions.
+More Lore Ipsum...
+
+% And you say good bye and drop your microphone. Because you rock, you are the boss and you deserve that fucking position! (L)
+\makeletterclosing
+\end{document}
