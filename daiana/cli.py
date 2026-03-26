@@ -1,36 +1,67 @@
-"""Main CLI entry point for Daiana"""
+#!/usr/bin/env python
 import click
+from rich.console import Console
+from rich.panel import Panel
+from rich.text import Text
+from rich import box
 
+from daiana.commands.compiler_cli import register_compile_command
 from daiana.commands.saver_cli import register_save_command
 from daiana.commands.shower_cli import register_show_command
 from daiana.commands.updater_cli import register_update_command
-from daiana.commands.compiler_cli import register_compile_command
+
+
+console = Console()
 
 
 @click.group()
-@click.version_option("0.1.0")
 def cli():
-    """
-╔══════════════════════════════════════════════════════════════════════╗
-║                           🏹  dAIana 🎯                              ║
-║                                                                      ║
-║            Job Hunting LaTeX Automation enhanced with AI             ║
-╚══════════════════════════════════════════════════════════════════════╝
-
-🎯 SAVE:     Save job targets to career CSV with auto-timestamps
-📊 SHOW:     Inspect recent jobs in fancy colored table
-🔄 UPDATE:   Modify job status/history
-📄 COMPILE:  LaTeX CV automation
-
-💡 daiana <command> --help
-    """
+    """🏹 dAIana - Job Hunting LaTeX Automation enhanced with AI"""
     pass
 
 
-register_save_command(cli)
-register_show_command(cli)
-register_update_command(cli)
-register_compile_command(cli)
+def print_banner():
+    """
+    Print the fancy aligned banner
+    """
 
-if __name__ == '__main__':
+    banner_text = Text.assemble(
+        ("🎯 SAVE:     Save job targets to career CSV with auto-timestamps", "bold cyan"),
+        "\n",
+        ("📊 SHOW:     Inspect recent jobs in fancy colored table", "bold magenta"),
+        "\n",
+        ("🔄 UPDATE:   Modify job status/history", "bold yellow"),
+        "\n",
+        ("📄 COMPILE:  LaTeX CV automation", "bold green"),
+    )
+
+    panel = Panel(
+        banner_text,
+        title="🏹  dAIana 🎯",
+        subtitle="Job Hunting LaTeX Automation enhanced with AI",
+        width=72,
+        box=box.HEAVY,
+        title_align="center",
+        subtitle_align="center",
+    )
+    console.print(panel)
+
+
+@cli.command()
+def help():
+    """Show the fancy help banner"""
+    print_banner()
+
+
+for register in [
+    register_compile_command,
+    register_save_command,
+    register_show_command,
+    register_update_command,
+]:
+    register(cli)
+
+
+if __name__ == "__main__":
+    print_banner()
     cli()

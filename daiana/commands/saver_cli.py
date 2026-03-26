@@ -4,11 +4,11 @@ from daiana.core.saver import save_job_in_csv
 
 
 def register_save_command(cli: click.Group) -> None:
-    @cli.command("save")
+    @cli.command("save", help="Save a new job you have applied to in a .csv file.")
     @click.option('--career', '-cp', required=True, help='Career path (e.g., "software")')
     def save_job(career: str) -> None:
         """
-        This function will call save_job_in_csv function in daiana.saver. It will ask you for some  inputs and save them in .csv with the choosen career.
+        Save the jobs you have applied to in a .csv file for easier tracking.
         """
 
         click.echo()

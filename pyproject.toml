@@ -9,11 +9,11 @@ description = "Tool for LaTeX CV/cover letter automation for job hunting"
 readme = "README.md"
 requires-python = ">=3.8"
 authors = [
-    {name = "Pano Pepino", email = "panizofisico@gmail.com"}
+    {name = "PanoPepino", email = "panizofisico@gmail.com"}
 ]
 keywords = ["cli", "latex", "cv", "cover-letter", "job-hunting"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: Alpha",
     "Intended Audience :: End Users/Desktop",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
@@ -24,6 +24,7 @@ classifiers = [
 
 dependencies = [
     "click>=8.0.0",
+    "rich>=13.0.0",  # For perfect terminal banners
 ]
 
 [project.scripts]

@@ -5,7 +5,7 @@ from daiana.utils.for_csv import history_format_display
 
 
 def register_show_command(cli: click.Group) -> None:
-    @cli.command("show")
+    @cli.command("show", help="Show previous jobs you have applied to and track their changes.")
     @click.option('--career', '-cp', required=True, help='Career path (e.g., "software")')
     @click.option('--rows', '-rj', type=int, default=20, help='Number of recent jobs')
     def show_job(career: str, rows: int) -> None:
