@@ -32,7 +32,7 @@ daiana --help
 
 ## Commands
 
-### `daiana compile`
+### 🟢 `daiana compile`
 
 Renders a LaTeX template and compiles it to PDF. Prompts you interactively for job details (position, company, location, career path, link). After compiling, optionally saves the job to a CSV tracker.
 
@@ -53,7 +53,7 @@ Cover letter mode asks two extra prompts: your tailored background and the compa
 
 ---
 
-### `daiana save`
+### 🩵 `daiana save`
 
 Manually saves a job application to a per-career CSV file, without compiling a document. Useful when you apply externally and just want to log it.
 
@@ -71,7 +71,7 @@ Prompts: job position, company name, location, and an optional link.
 
 ---
 
-### `daiana show`
+### 🟣 `daiana show`
 
 Displays the last N saved applications for a given career path in a formatted table with color-coded status history.
 
@@ -89,7 +89,7 @@ daiana show --career software --rows 10
 
 ---
 
-### `daiana update`
+### 🟡 `daiana update`
 
 Updates the status of a saved job application. Finds the matching entry by position + company, shows current status, and lets you set a new one.
 
@@ -134,4 +134,3 @@ daiana/
 
 - CSV files are stored per career path (e.g., `software_jobs.csv`) in your working directory.
 - Status history is stored as JSON inside the CSV, rendered with colors in the terminal.
-- `.DS_Store` and `__pycache__` should be added to `.gitignore`.

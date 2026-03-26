@@ -1,10 +1,8 @@
-from email.policy import default
-
 from daiana.utils.for_latex import render_template
 import click
 from pathlib import Path
 from daiana.core.compiler import compile_tex
-from daiana.core.saver import *
+from daiana.core.saver import save_job_in_csv
 
 
 def register_compile_command(cli: click.Group) -> None:
@@ -82,7 +80,7 @@ def register_compile_command(cli: click.Group) -> None:
         )
         click.echo()
 
-        # 2) Ask yes/no after compile
+        # Ask yes/no after compile
         if click.confirm(
             click.style("Would you like to save this job info in CSV?", fg="cyan"),
             default=False,
@@ -91,7 +89,7 @@ def register_compile_command(cli: click.Group) -> None:
                 click.style("Storing job info in CSV...", fg="cyan")
             )
             csv_path = save_job_in_csv(
-                career=replacements["career"],      # <-- from replacements
+                career=replacements["career"],
                 job_position=replacements["job_position"],
                 company_name=replacements["company_name"],
                 location=replacements["location"],
