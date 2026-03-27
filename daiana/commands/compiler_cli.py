@@ -6,7 +6,7 @@ from daiana.core.saver import save_job_in_csv
 
 
 def register_compile_command(cli: click.Group) -> None:
-    @cli.command("compile")
+    @cli.command("compile", help="Compile your cv or cover letter for a given job position. Optional saving in .csv database.")
     @click.pass_context
     @click.option("--cv", "mode", flag_value="cv", help="CV mode")
     @click.option("--cl", "mode", flag_value="cl", help="Cover letter mode")
@@ -24,7 +24,7 @@ def register_compile_command(cli: click.Group) -> None:
         click.echo()
         click.echo(click.style("--- Prepare your weapons to start the hunt! ---", fg="green"))
         click.echo()
-        click.echo(click.style("Choose mode with --cv or --cl, then fill in the fields below:", fg="green"))
+        click.echo(click.style("Fill in the fields below:", fg="green"))
         click.echo()
 
         # Auto-select template

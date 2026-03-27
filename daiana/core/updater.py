@@ -20,6 +20,7 @@ def load_rows_career(career: str) -> tuple[list[dict], Path]:
     Returns:
         tuple[list[dict], Path]: The .csv read and the path.
     """
+
     data_dir = check_dir_exist()
     rewritten = rewrite_filename(career)
     csv_path = data_dir/f"{rewritten}_jobs.csv"
@@ -47,6 +48,7 @@ def find_rows(rows: list[dict],
     Returns:
         list[tuple[int, dict]]: A set of matches (in case you have applied to similar positions in the same company)
     """
+
     matches = []
     for i, row in enumerate(rows):
         job_pos = (row.get("job_position") or "").strip()
@@ -60,9 +62,9 @@ def find_rows(rows: list[dict],
     return matches
 
 
-def update_rows(rows: list[dict],
-                row_index: int,
-                new_status: str) -> None:
+def update_history(rows: list[dict],
+                   row_index: int,
+                   new_status: str) -> None:
     """
     Given the chosen rows in previous :func:`find_rows`, it will allow you to update the history status of the job position.
 
@@ -85,6 +87,26 @@ def update_rows(rows: list[dict],
     # Appending new history
     history[new_status] = today
     row['history'] = json.dumps(history)
+
+
+def edit_entry(rows: list[dict],
+               row_index: int,
+               to_edit: str,
+               new_entry: str) -> None:
+    """
+    Given the chosen rows in previous :func:`find_rows`, it will allow you to edit any field of that job entry that is not history status.
+
+    Args:
+        rows (list[dict]): The chosen rows.
+        row_index (int): The position of your desired job, in case it repeats for some reason.
+        new_entry (str): Just the edited entry.
+    """
+
+    row = rows[row_index]
+
+    # Reading old entry
+
+    row[to_edit.lower()] = new_entry
 
 
 def write_rows(csv_path: Path,

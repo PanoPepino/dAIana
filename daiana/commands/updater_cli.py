@@ -1,24 +1,29 @@
 import click
 from daiana.utils.for_csv import history_format_display
-from daiana.utils.constants import ALLOW_STATUS, STATUS_COLORS
-from daiana.core.updater import load_rows_career, find_rows, update_rows, write_rows
+from daiana.utils.constants import ALLOW_STATUS, FIELDNAMES, STATUS_COLORS
+from daiana.core.updater import edit_entry, load_rows_career, find_rows, update_history, write_rows
 
 
 def register_update_command(cli: click.Group) -> None:
     @cli.command("update", help="Update the status of a saved job application.")
     @click.option('--career', '-cp', required=True, help='Career path (e.g., "software")')
-    def update_job(career: str) -> None:
+    @click.option('--status', '-s', is_flag=True, help='To update status of your application')
+    @click.option('--field', '-i', is_flag=True, help='To edit any other field of your application')
+    def update_job(career: str, status: bool, field: bool) -> None:
+
+        # Banner
         click.echo()
         click.echo(click.style("┌──────────────────────────────────────────────────────────┐", fg="bright_yellow"))
         click.echo(click.style("│      dAIana updater: Track your job application status   │", fg="bright_yellow", bold=True))
         click.echo(click.style("└──────────────────────────────────────────────────────────┘", fg="bright_yellow"))
         click.echo()
-        click.echo(click.style("--- New information of your tracked preys? Update it! ---", fg="yellow"))
+        click.echo(click.style("--- New fieldrmation of your tracked preys? Update it! ---", fg="yellow"))
         click.echo()
 
         click.echo(click.style("Fill in the fields below:", fg="yellow"))
         click.echo()
-        # career_path = click.prompt(click.style("1) Career path", fg='white', bold=True))
+
+        # Inputs
         position = click.prompt(click.style("1) Job Position", fg='white', bold=True))
         company = click.prompt(click.style("2) Company Name", fg='white', bold=True))
 
@@ -72,30 +77,50 @@ def register_update_command(cli: click.Group) -> None:
             + click.style(chosen_row.get("city", ""), fg='white')
         )
 
-        # Fixed: show colored current status from history JSON
-        current_status_display = history_format_display(chosen_row.get("history", ""))
-        click.echo(
-            click.style("Latest update: ", fg="white")
-            + current_status_display
-        )
+        if status:
+            current_status_display = history_format_display(chosen_row.get("history", ""))
+            click.echo(
+                click.style("Latest update: ", fg="white")
+                + current_status_display
+            )
 
-        click.echo()
-        new_status = click.prompt(
-            click.style("New status", fg='white', bold=True),
-            type=click.Choice(ALLOW_STATUS),
-        )
+            click.echo()
+            new_status = click.prompt(
+                click.style("New status", fg='white', bold=True),
+                type=click.Choice(ALLOW_STATUS))
 
-        # Update and save
-        update_rows(rows, row_index, new_status)
-        write_rows(csv_path, rows)
+            # Update and save
+            update_history(rows, row_index, new_status)
+            write_rows(csv_path, rows)
 
-        # Confirmation with correct color
-        new_status_display = STATUS_COLORS.get(new_status, 'white')
-        click.echo()
-        click.echo(
-            click.style("Updated status to ", fg="yellow", bold=True)
-            + click.style(new_status, fg=new_status_display, bold=True)
-            + click.style(" and saved to ", fg="cyan")
-            + click.style(str(csv_path), fg="white")
-        )
+            # Confirmation
+            new_status_display = STATUS_COLORS.get(new_status, 'white')
+            click.echo()
+            click.echo(
+                click.style("Updated ", fg="yellow", bold=True)
+                + click.style(" status to ", fg='white')
+                + click.style(new_status, fg=new_status_display, bold=True)
+                + click.style(" and ", fg='white')
+                + click.style("saved ", fg="cyan")
+                + click.style(f"to {str(csv_path)}", fg="white"))
+
+        elif field:
+            field_to_edit = click.prompt(click.style("Entry you want to edit", fg='white',
+                                                     bold=True), type=click.Choice(FIELDNAMES))
+
+            new_field = click.prompt(click.style(f"New {field_to_edit}",
+                                     fg='white', bold=True))
+
+            # Update and save
+            edit_entry(rows, row_index, field_to_edit, new_field)
+            write_rows(csv_path, rows)
+
+            # Confirmation
+            click.echo()
+            click.echo(
+                click.style(f"Edited ", fg="yellow", bold=True)
+                + click.style(f"{field_to_edit} to {new_field}", fg='white')
+                + click.style(" and saved to ", fg="cyan")
+                + click.style(str(csv_path), fg="white"))
+
         click.echo()
