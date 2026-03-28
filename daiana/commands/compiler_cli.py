@@ -1,12 +1,13 @@
-from daiana.utils.for_latex import render_template
 import click
+from daiana.utils.for_latex import render_template
 from pathlib import Path
 from daiana.core.compiler import compile_tex
 from daiana.core.saver import save_job_in_csv
+from daiana.utils.styles import *
 
 
 def register_compile_command(cli: click.Group) -> None:
-    @cli.command("compile", help="Compile your cv or cover letter for a given job position. Optional saving in .csv database.")
+    @cli.command("compile", help="Compile CV or cover letter for a job position. Optional saving in .csv database")
     @click.pass_context
     @click.option("--cv", "mode", flag_value="cv", help="CV mode")
     @click.option("--cl", "mode", flag_value="cl", help="Cover letter mode")
@@ -17,14 +18,12 @@ def register_compile_command(cli: click.Group) -> None:
         """
 
         # Banner
-        click.echo()
-        click.echo(click.style("┌──────────────────────────────────────────────────────────┐", fg="bright_green"))
-        click.echo(click.style("│      dAIana compiler: LaTeX CV & cover letter builder    │", fg="bright_green", bold=True))
-        click.echo(click.style("└──────────────────────────────────────────────────────────┘", fg="bright_green"))
-        click.echo()
-        click.echo(click.style("--- Prepare your weapons to start the hunt! ---", fg="green"))
-        click.echo()
-        click.echo(click.style("Fill in the fields below:", fg="green"))
+        command_banner(
+            "dAIana compiler: CV & cover letter sharpening tool",
+            COMMAND_COLORS['compile']
+        )
+
+        click.echo(click.style("Fill in fields below:", fg=COMMAND_COLORS['compile']))
         click.echo()
 
         # Auto-select template
@@ -74,7 +73,7 @@ def register_compile_command(cli: click.Group) -> None:
 
         click.echo()
         click.echo(
-            click.style("Compiled! ", fg="green", bold=True)
+            click.style("Compiled! ", fg=COMMAND_COLORS['compile'], bold=True)
             + click.style("see the PDF generated from: ", fg="white")
             + click.style(f"{template.name}")
         )

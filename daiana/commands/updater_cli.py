@@ -1,6 +1,7 @@
 import click
 from daiana.utils.for_csv import history_format_display
 from daiana.utils.constants import ALLOW_STATUS, FIELDNAMES, STATUS_COLORS
+from daiana.utils.styles import *
 from daiana.core.updater import edit_entry, load_rows_career, find_rows, update_history, write_rows
 
 
@@ -12,15 +13,12 @@ def register_update_command(cli: click.Group) -> None:
     def update_job(career: str, status: bool, field: bool) -> None:
 
         # Banner
-        click.echo()
-        click.echo(click.style("┌──────────────────────────────────────────────────────────┐", fg="bright_yellow"))
-        click.echo(click.style("│      dAIana updater: Track your job application status   │", fg="bright_yellow", bold=True))
-        click.echo(click.style("└──────────────────────────────────────────────────────────┘", fg="bright_yellow"))
-        click.echo()
-        click.echo(click.style("--- New fieldrmation of your tracked preys? Update it! ---", fg="yellow"))
-        click.echo()
+        command_banner(
+            "dAIana updater: Update/Edit your job hunt information ",
+            COMMAND_COLORS['update']
+        )
 
-        click.echo(click.style("Fill in the fields below:", fg="yellow"))
+        click.echo(click.style("Fill in fields below:", fg=COMMAND_COLORS['update']))
         click.echo()
 
         # Inputs
@@ -42,7 +40,7 @@ def register_update_command(cli: click.Group) -> None:
         # Let user pick if multiple matches
         if len(matches) > 1:
             click.echo()
-            click.echo(click.style(f"Found {len(matches)} matching jobs:", fg="bright_yellow", bold=True))
+            click.echo(click.style(f"Found {len(matches)} matching jobs:", fg=COMMAND_COLORS['update'], bold=True))
             for idx, (_, row) in enumerate(matches):
                 history_display = history_format_display(row.get("history", ""))
                 line = (
@@ -67,13 +65,13 @@ def register_update_command(cli: click.Group) -> None:
             row_index, chosen_row = matches[0]
 
         click.echo()
-        click.echo(click.style("Selected job:", fg="bright_yellow", bold=True))
+        click.echo(click.style("Selected job:", fg=COMMAND_COLORS['update'], bold=True))
         click.echo("")
         click.echo(
             click.style(chosen_row.get("job_position", ""), fg="white", bold=True)
-            + click.style(" @ ", fg="bright_yellow")
+            + click.style(" @ ", fg=COMMAND_COLORS['update'])
             + click.style(chosen_row.get("company_name", ""), fg="white")
-            + click.style(", ", fg="bright_yellow")
+            + click.style(", ", fg=COMMAND_COLORS['update'])
             + click.style(chosen_row.get("city", ""), fg='white')
         )
 

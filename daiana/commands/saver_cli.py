@@ -1,6 +1,8 @@
 import click
 
 from daiana.core.saver import save_job_in_csv
+from daiana.utils.constants import COMMAND_COLORS
+from daiana.utils.styles import *
 
 
 def register_save_command(cli: click.Group) -> None:
@@ -11,17 +13,14 @@ def register_save_command(cli: click.Group) -> None:
         Save the jobs you have applied to in a .csv file for easier tracking.
         """
 
-        click.echo()
-        click.echo(click.style("┌──────────────────────────────────────────────────────────┐",  fg="bright_cyan"))
-        click.echo(click.style("│      dAIana saver: Store your job information in CSV     │",  fg="bright_cyan", bold=True))
-        click.echo(click.style("└──────────────────────────────────────────────────────────┘",  fg="bright_cyan"))
-        click.echo()
-        click.echo(click.style("--- Store your new hunting trophies ---", fg="cyan"))
+        command_banner(
+            "dAIana saver: Store your job hunt trophies",
+            COMMAND_COLORS['save']
+        )
+
+        click.echo(click.style("Fill in the fields below:", fg=COMMAND_COLORS['save']))
         click.echo()
 
-        click.echo(click.style("Fill in the fields below:", fg="cyan"))
-        click.echo()
-        # career = click.prompt(click.style("1) Career path", fg="white", bold=True))
         job_position = click.prompt(click.style("1) Job position", fg="white", bold=True))
         company_name = click.prompt(click.style("2) Company name", fg="white", bold=True))
         location = click.prompt(click.style("3) Location", fg="white", bold=True), default='',  show_default=False)
@@ -42,7 +41,7 @@ def register_save_command(cli: click.Group) -> None:
         )
 
         click.echo(
-            click.style("Saved ", fg="cyan", bold=True)
+            click.style("Saved ", fg=COMMAND_COLORS['save'], bold=True)
             + click.style("Job info stored at: ", fg="white")
             + click.style(f"{csv_path}_jobs.csv")
         )

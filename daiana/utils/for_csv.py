@@ -1,10 +1,9 @@
 import re
 from pathlib import Path
-from typing import Dict
 import click
 import json
 
-from daiana.utils.constants import STATUS_COLORS
+from daiana.utils.styles import *
 
 
 def rewrite_filename(name: str) -> str:
@@ -101,18 +100,3 @@ def history_format_display(history_json: str,
 
     except:
         pass
-
-
-def get_status_color(action: str) -> Dict[str, any]:
-    """
-    Simple function to map a color to its associated status and/or date.
-
-    Args:
-        action (str): The status of the history in the json file.
-
-    Returns:
-        Dict[str, any]: The appropiate color for the status.
-    """
-
-    coloring = STATUS_COLORS.get(action.lower(), "white")
-    return {"fg": coloring}
