@@ -2,11 +2,11 @@ import click
 
 from daiana.core.saver import save_job_in_csv
 from daiana.utils.constants import COMMAND_COLORS
-from daiana.utils.styles import *
+from daiana.utils.styles import DaianaCommand, command_banner
 
 
 def register_save_command(cli: click.Group) -> None:
-    @cli.command("save", help="Save a new job you have applied to in a .csv file.")
+    @cli.command("save", cls=DaianaCommand, help="Save a new job you have applied to in a .csv file.")
     @click.option('--career', '-cp', required=True, help='Career path (e.g., "software")')
     def save_job(career: str) -> None:
         """
@@ -23,7 +23,7 @@ def register_save_command(cli: click.Group) -> None:
 
         job_position = click.prompt(click.style("1) Job position", fg="white", bold=True))
         company_name = click.prompt(click.style("2) Company name", fg="white", bold=True))
-        location = click.prompt(click.style("3) Location", fg="white", bold=True), default='',  show_default=False)
+        location = click.prompt(click.style("3) Location", fg="white", bold=True), default='', show_default=False)
         job_link = click.prompt(
             click.style("4) Link to job description ", fg="white", bold=True) +
             click.style('(press ENTER if none)', fg='white'),

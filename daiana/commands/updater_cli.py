@@ -1,12 +1,12 @@
 import click
 from daiana.utils.for_csv import history_format_display
-from daiana.utils.constants import ALLOW_STATUS, FIELDNAMES, STATUS_COLORS
-from daiana.utils.styles import *
+from daiana.utils.constants import ALLOW_STATUS, FIELDNAMES, STATUS_COLORS, COMMAND_COLORS
+from daiana.utils.styles import DaianaCommand, command_banner
 from daiana.core.updater import edit_entry, load_rows_career, find_rows, update_history, write_rows
 
 
 def register_update_command(cli: click.Group) -> None:
-    @cli.command("update", help="Update the status of a saved job application.")
+    @cli.command("update", cls=DaianaCommand, help="Update the status of a saved job application.")
     @click.option('--career', '-cp', required=True, help='Career path (e.g., "software")')
     @click.option('--status', '-s', is_flag=True, help='To update status of your application')
     @click.option('--field', '-i', is_flag=True, help='To edit any other field of your application')
@@ -49,7 +49,7 @@ def register_update_command(cli: click.Group) -> None:
                     + click.style(" @ ", fg="white")
                     + click.style(row.get("company_name", ""), fg="white")
                     + click.style("  (", fg="white")
-                    + history_display  # Colored latest status!
+                    + history_display
                     + click.style(")", fg="white")
                 )
                 click.echo(line)

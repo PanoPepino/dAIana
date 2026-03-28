@@ -1,9 +1,9 @@
 from daiana.core.oracler import *
-from daiana.utils.styles import *
+from daiana.utils.styles import DaianaCommand, command_banner, COMMAND_COLORS
 
 
 def register_hunt_command(cli: click.Group) -> None:
-    @cli.command("hunt", help="Ask AI, choose skills, compile documents & track job.")
+    @cli.command("hunt", cls=DaianaCommand, help="Ask AI, choose skills, compile documents & track job.")
     def hunt_job():
         """
         TO FIX
@@ -15,7 +15,4 @@ def register_hunt_command(cli: click.Group) -> None:
             COMMAND_COLORS['hunt']
         )
 
-        # Working on it!
-
-        # click.echo(click.style("Fill in fields below:", fg=COMMAND_COLORS['compile']))
         click.echo()

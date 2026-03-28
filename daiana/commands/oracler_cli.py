@@ -1,9 +1,9 @@
 from daiana.core.oracler import *
-from daiana.utils.styles import *
+from daiana.utils.styles import DaianaCommand, command_banner, COMMAND_COLORS
 
 
 def register_oracle_command(cli: click.Group) -> None:
-    @cli.command("oracle", help="Ask AI to tune CV & letter for a position.")
+    @cli.command("oracle", cls=DaianaCommand, help="Ask AI to tune CV & letter for a position.")
     def consult_oracle():
         """
         Provide a url with job description. Extract your best suited skills, projects and career path for it.
@@ -15,7 +15,4 @@ def register_oracle_command(cli: click.Group) -> None:
             COMMAND_COLORS['oracle']
         )
 
-        # Working on it!
-
-        # click.echo(click.style("Fill in fields below:", fg=COMMAND_COLORS['compile']))
         click.echo()

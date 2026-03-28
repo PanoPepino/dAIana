@@ -3,11 +3,11 @@ from daiana.utils.for_latex import render_template
 from pathlib import Path
 from daiana.core.compiler import compile_tex
 from daiana.core.saver import save_job_in_csv
-from daiana.utils.styles import *
+from daiana.utils.styles import DaianaCommand, command_banner, COMMAND_COLORS
 
 
 def register_compile_command(cli: click.Group) -> None:
-    @cli.command("compile", help="Compile CV or cover letter for a job position. Optional saving in .csv database")
+    @cli.command("compile", cls=DaianaCommand, help="Compile CV or cover letter for a job position. Optional saving in .csv database")
     @click.pass_context
     @click.option("--cv", "mode", flag_value="cv", help="CV mode")
     @click.option("--cl", "mode", flag_value="cl", help="Cover letter mode")
