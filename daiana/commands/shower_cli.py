@@ -2,11 +2,11 @@ import click
 from daiana.core.shower import get_last_jobs
 from daiana.utils.constants import COMMAND_COLORS
 from daiana.utils.for_csv import history_format_display
-from daiana.utils.styles import *
+from daiana.utils.styles import DaianaCommand, command_banner
 
 
 def register_show_command(cli: click.Group) -> None:
-    @cli.command("show", help="Track previous applied jobs and their status.")
+    @cli.command("show", cls=DaianaCommand, help="Track previous applied jobs and their status.")
     @click.option('--career', '-cp', required=True, help='Career path (e.g., "software")')
     @click.option('--rows', '-rj', type=int, default=20, help='Number of recent jobs')
     def show_job(career: str, rows: int) -> None:
