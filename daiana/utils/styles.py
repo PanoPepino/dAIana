@@ -13,19 +13,15 @@ class DaianaCommand(click.Command):
     def format_help(self, ctx: click.Context, formatter: click.HelpFormatter) -> None:
         # Resolve command color (fallback to white)
         color = COMMAND_COLORS.get(self.name, (240, 240, 240))
-
+        click.echo()
         # Color the description
         if self.help:
             click.echo(click.style(self.help, fg=color, bold=True))
             click.echo()
 
         # Render Usage + Options normally via formatter
-        self.format_usage(ctx, formatter)
+        # self.format_usage(ctx, formatter)
         self.format_options(ctx, formatter)
-        click.echo(formatter.getvalue(), nl=False)
-
-        # Trailing blank line before next prompt
-        click.echo()
 
 
 def get_status_color(action: str) -> Dict[str, any]:

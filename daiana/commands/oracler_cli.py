@@ -1,3 +1,4 @@
+import click
 from daiana.core.oracler import *
 from daiana.utils.styles import DaianaCommand, command_banner, COMMAND_COLORS
 

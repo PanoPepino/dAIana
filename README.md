@@ -1,6 +1,6 @@
 # dAIana 🏹
 
-> A terminal-first CLI for LaTeX CV & cover letter automation, with built-in job application tracking.
+> Terminal CLI package for LaTeX CV & cover letter automation with AI tailored recommendations, with built-in job application tracking.
 
 No GUI. No fuss. Fill in a few prompts, get a compiled PDF, and track where you applied — all from your terminal.
 
@@ -34,7 +34,7 @@ daiana --help
 
 > Each command is color-coded in the terminal to help you navigate at a glance. Colors come from `daiana/utils/constants.py`.
 
-### 🔵 `daiana compile` <sub>Electric Moonlit Blue `#1AAAF0`</sub>
+### 🔵 `daiana compile` 
 
 Renders a LaTeX template and compiles it to PDF. Prompts you interactively for job details (position, company, location, career path, link). After compiling, optionally saves the job to a CSV tracker.
 
@@ -50,7 +50,7 @@ Cover letter mode asks two extra prompts: your tailored background and the compa
 
 ---
 
-### 🟢 `daiana save` <sub>Vivid Moss Green `#00C878`</sub>
+### 🟢 `daiana save` 
 
 Manually saves a job application to a per-career CSV file, without compiling a document. Useful when you apply externally and just want to log it.
 
@@ -64,7 +64,7 @@ Prompts: job position, company name, location, and an optional link.
 
 ---
 
-### 🟫 `daiana show` <sub>Rich Warm Brown `#C88C64`</sub>
+### 🟫 `daiana show` 
 
 Displays the last N saved applications for a given career path in a formatted table with color-coded status history.
 
@@ -77,7 +77,7 @@ Displays the last N saved applications for a given career path in a formatted ta
 
 ---
 
-### 🩷 `daiana update` <sub>Vivid Peach Pink `#F5C8DC`</sub>
+### 🩷 `daiana update` 
 
 Updates the status of a saved job application. Finds the matching entry by position + company, shows current status, and lets you set a new one. If multiple entries match, you pick from a numbered list.
 
@@ -91,45 +91,23 @@ Allowed statuses are defined in `daiana/utils/constants.py`.
 
 ---
 
-### 🔴 `daiana hunt` <sub>Electric Crimson `#F03C5A`</sub>
+### 🔴 `daiana hunt` 
 
 The full end-to-end hunt: calls `oracle` to get AI-powered recommendations, displays them, and — if you confirm — compiles the documents and saves the application to the tracker in one shot.
 
-**Flags:**
+*WORKING ON IT*
 
-| Flag | Description |
-|------|-------------|
-| `--career` / `-cp` | Career path label *(required)* |
 
 ---
 
-### 🟡 `daiana oracle` <sub>Radiant Oracle Gold `#E6BE3C`</sub>
+### 🟡 `daiana oracle` 
 
 Feeds a job description URL to an LLM and returns tailored recommendations: suggested skills, projects from your CV, and a first-paragraph draft for your cover letter. Outputs a structured dict you can pipe into `compile`.
 
-**Flags:**
-
-| Flag | Description |
-|------|-------------|
-| `--url` / `-u` | URL of the job posting *(required)* |
-| `--career` / `-cp` | Career path label *(required)* |
+*WORKING ON IT*
 
 ---
 
-## Status Color Legend
-
-When `daiana show` renders your application history, each status is color-coded:
-
-| Status | Color | Meaning |
-|--------|-------|---------|
-| `applied` | Off-white `#F0F0F0` | Sent the application |
-| `contacted` | Pale cream yellow `#FAF0B4` | Recruiter reached out |
-| `int_1` | Warm green `#96C896` | First interview scheduled |
-| `int_2` | Vibrant turquoise `#46D2BE` | Second interview scheduled |
-| `offered` | Vivid success green `#00C878` | Offer received 🎉 |
-| `rejected` | Electric crimson `#F03C5A` | Rejected |
-
----
 
 ## Project Structure
 
@@ -163,12 +141,4 @@ daiana/
 - Status history is stored as JSON inside the CSV, rendered with colors in the terminal.
 - Requires an OpenAI API key in `.env` for `oracle` and `hunt` commands.
 
----
 
-## 🔭 What's Coming
-
-- **Color prompt output polish** — fixing rich-click integration so interactive prompts inherit command colors consistently.
-- **Color legend in the terminal** — `daiana show` will display an inline legend of status colors without needing the README.
-- **Better in-terminal `--help`** — each command will have richer, self-documenting help strings so first-time users need zero external docs.
-- **Smarter oracle prompt** — engineering a prompt that always returns a well-structured `company_challenge` JSON, with the option to manually edit it before confirming and sending to compile.
-- **`daiana hunt` full loop** — once oracle is rock-solid, `hunt` will complete the full cycle: scrape → recommend → edit → compile → save, all in a single command.

@@ -6,12 +6,12 @@
 - [X] Add fun descriptions to each function (prepare your hunt, show your preys, etc.)
 - [X] Try to implement API thing to call GPT/Perplexity with given prompt to provide recommended path and stuff.
 - [X] Enhance update command so that one can choose position and then change any column.
-
+- [X] Fix coloring prompt output. (investigate rich-click stuff)
 
 
 
 # For Saturday 28th March
-- [ ] Fix coloring prompt output. (investigate rich-click stuff)
+
 - [ ] Create Legend for color meaning.
 - [ ] Create help commands so that anyone can understand what each thing does.
 - [ ] Document compiler and any other func.
