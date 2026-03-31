@@ -13,22 +13,21 @@ from daiana.utils.styles import *
 
 class DaianaGroup(click.Group):
     def format_help(self, ctx, formatter) -> None:
-
         forest_teal = (0, 200, 120)
         light_wood = (200, 140, 100)
         banner_width = 60
 
-        banner_top = click.style("╔" + "═"*(banner_width-2) + "╗", fg=forest_teal)
-        banner_bot = click.style("╚" + "═"*(banner_width-2) + "╝", fg=forest_teal)
+        banner_top = click.style("+" + "-"*(banner_width-2) + "+", fg=forest_teal)
+        banner_bot = click.style("+" + "-"*(banner_width-2) + "+", fg=forest_teal)
 
         # FIXED: Perfect daiana line
         bow_daiana_bow = "🏹 dAIana 🏹"
         daiana_spaces = (banner_width - 3 - len(bow_daiana_bow)) // 2
-        daiana_line = f"{click.style("║", fg=light_wood)}{' ' * daiana_spaces}{click.style(bow_daiana_bow, fg=light_wood, bold=True)}{' ' * (daiana_spaces)}{click.style("║", fg=light_wood)}"
+        daiana_line = f"{click.style('|', fg=light_wood)}{' ' * daiana_spaces}{click.style(bow_daiana_bow, fg=light_wood, bold=True)}{' ' * (daiana_spaces)}{click.style('|',   fg=light_wood)}"
         banner_daiana = click.style(daiana_line, fg=forest_teal)
 
         # Goddess row
-        goddess_line = f"║{center_text('AI assistant for Job Hunting', banner_width-2)}{' ' * (daiana_spaces-8)}║"
+        goddess_line = f"| {center_text('AI assistant for Job Hunting', banner_width-2)}              |"
         banner_goddess = click.style(goddess_line, fg=light_wood)
 
         # Render
