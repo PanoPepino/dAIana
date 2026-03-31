@@ -27,11 +27,13 @@ dependencies = [
     "rich>=13.0.0",  # For perfect terminal banners
 ]
 
+[project.optional-dependencies]
+dev = ["pytest"]
+ai = ["openai"]     # or "perplexity-client", or "httpx[http2]", whatever you use
+
 [project.scripts]
 daiana = "daiana.cli:cli"
 
-[project.optional-dependencies]
-dev = ["pytest"]
 
 [project.urls]
 Homepage = "https://github.com/PanoPepino/daiana"
