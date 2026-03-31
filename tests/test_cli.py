@@ -105,18 +105,3 @@ def test_oracle_help():
     # The help must contain some phrase that is in the oracle command description:
     assert "oracle" in result.stdout
     assert "Options:" in result.stdout
-
-
-def test_oracle_smoke():
-    """
-    Extra sanity test: the oracle command should at least respond to `--help`.
-
-    We allow exit code 0 (help prints) or 2 (missing required option),
-    because oracle expects some options even for help in some Click setups.
-    """
-    result = _run_cli(["oracle", "--help"], check=False)  # don't raise on error
-
-    # It can either:
-    #  - print help and exit 0, or
-    #  - show an error about missing options and exit 2
-    assert result.returncode in (0, 2)

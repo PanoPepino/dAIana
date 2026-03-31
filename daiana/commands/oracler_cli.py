@@ -1,6 +1,9 @@
 import click
 import os
+import json
 
+from pathlib import Path
+from typing import Dict
 from openai import OpenAI
 from pathlib import Path
 from dotenv import load_dotenv

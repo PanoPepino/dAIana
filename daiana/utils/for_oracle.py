@@ -1,6 +1,5 @@
 import click
 import json
-from narwhals import Field
 import requests
 from bs4 import BeautifulSoup
 from pathlib import Path
