@@ -20,15 +20,17 @@ def detect_project_root(tex_file: Path) -> Path:
 
 
 def build_texinputs(tmp_root: Path) -> str:
-    """
-    EXACT bash: ./cls//:./loader//:${TEXINPUTS:-}. Given the structure of the preamble and cls files, this is necessary to import everytime. 
+    paths = ["./"]  # Current dir first
 
-    Note ..
+    # Conditional: Only add cls/ if it exists (skip for system ModernCV)
+    cls_dir = tmp_root / 'cls'
+    if cls_dir.exists() and any(cls_dir.glob('*.cls')):
+        paths.append(f"{tmp_root / 'cls'}//")
 
-    Observe that the path requires to be changed if the folder arrangement changes. If you are compiling things in a folder at the same level as cls/ and loader/, you will need to adjust this path.
-    """
+    # Always add loader/ for your preamble
+    paths.append(f"{tmp_root / 'loader'}//")
 
-    prefix = f"./:{tmp_root / 'cls'}//./:{tmp_root / 'loader'}//:"
+    prefix = ":".join(paths) + ":"
     original = os.environ.get("TEXINPUTS", "")
     return prefix + original
 

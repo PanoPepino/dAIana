@@ -33,7 +33,7 @@ ALLOW_STATUS = [
 FIELDNAMES = [
     'job_position',
     'company_name',
-    'city',
+    'location',
     'history',
     'job_link'
 ]

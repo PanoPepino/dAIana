@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-from typing import cast
 import click
 
 
@@ -57,9 +56,9 @@ class DaianaGroup(click.Group):
             cmd_label = get_command_color(cmd_name, color)
             cmd_help = self.commands[cmd_name].get_short_help_str(limit=80)
             body.append(f"  - {cmd_label}: {cmd_help}")
+
         # Render
         click.echo("\n".join(body))
-        click.echo()
 
 
 @DaianaGroup

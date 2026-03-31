@@ -1,4 +1,5 @@
 import click
+
 from daiana.utils.for_csv import history_format_display
 from daiana.utils.constants import ALLOW_STATUS, FIELDNAMES, STATUS_COLORS, COMMAND_COLORS
 from daiana.utils.styles import DaianaCommand, command_banner
@@ -11,6 +12,13 @@ def register_update_command(cli: click.Group) -> None:
     @click.option('--status', '-s', is_flag=True, help='To update status of your application')
     @click.option('--field', '-i', is_flag=True, help='To edit any other field of your application')
     def update_job(career: str, status: bool, field: bool) -> None:
+        """Update/Edit your job entries in case new information about the application has appear and/or you messed up with the information.
+
+        Args:
+            career (str): Required flag to pass to edit a given .csv
+            status (bool): Optional flag if you wanna modify the status of an application
+            field (bool): Optional flag if you wanna modify any other entry.
+        """
 
         # Banner
         command_banner(
@@ -95,11 +103,11 @@ def register_update_command(cli: click.Group) -> None:
             new_status_display = STATUS_COLORS.get(new_status, 'white')
             click.echo()
             click.echo(
-                click.style("Updated ", fg="yellow", bold=True)
+                click.style("Updated ", fg=COMMAND_COLORS['update'], bold=True)
                 + click.style(" status to ", fg='white')
                 + click.style(new_status, fg=new_status_display, bold=True)
                 + click.style(" and ", fg='white')
-                + click.style("saved ", fg="cyan")
+                + click.style("saved ", fg=COMMAND_COLORS['save'])
                 + click.style(f"to {str(csv_path)}", fg="white"))
 
         elif field:
@@ -116,9 +124,9 @@ def register_update_command(cli: click.Group) -> None:
             # Confirmation
             click.echo()
             click.echo(
-                click.style(f"Edited ", fg="yellow", bold=True)
+                click.style(f"Edited ", fg=COMMAND_COLORS['update'], bold=True)
                 + click.style(f"{field_to_edit} to {new_field}", fg='white')
-                + click.style(" and saved to ", fg="cyan")
+                + click.style(" and saved to ", fg=COMMAND_COLORS['save'])
                 + click.style(str(csv_path), fg="white"))
 
         click.echo()

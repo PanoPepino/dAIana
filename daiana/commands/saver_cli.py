@@ -10,7 +10,7 @@ def register_save_command(cli: click.Group) -> None:
     @click.option('--career', '-cp', required=True, help='Career path (e.g., "software")')
     def save_job(career: str) -> None:
         """
-        Save the jobs you have applied to in a .csv file for easier tracking.
+        Save the jobs you have applied to in a .csv file for easier tracking. A set of inputs will appear for easier storage.
         """
 
         command_banner(

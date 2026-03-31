@@ -34,7 +34,7 @@ def save_job_in_csv(career: str,
 
     job_info = {'job_position': job_position,
                 'company_name': company_name,
-                'city': location,
+                'location': location,
                 'history': json.dumps(history),
                 'job_link': job_link}
 

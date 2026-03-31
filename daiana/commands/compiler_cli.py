@@ -1,4 +1,5 @@
 import click
+
 from daiana.utils.for_latex import render_template
 from pathlib import Path
 from daiana.core.compiler import compile_tex
@@ -12,9 +13,15 @@ def register_compile_command(cli: click.Group) -> None:
     @click.option("--cv", "mode", flag_value="cv", help="CV mode")
     @click.option("--cl", "mode", flag_value="cl", help="Cover letter mode")
     @click.option("--username", "-un", default="user_name", help="your name to appear in .pdf name")
-    def compile_from_template(ctx: click.Context, mode: str, username):
-        """
-        Render a .tex template (template_something.tex), then compile it.
+    @click.option('--verbose', is_flag=True, help="Latex compilation will provide information")
+    def compile_from_template(ctx: click.Context, mode: str, username, verbose):
+        """Render a .tex template (template_something.tex), then compile it.
+
+        Args:
+            ctx (click.Context):
+            mode (str): pass a given flag. --cv or --cl for Cv or cover letter
+            username (_type_): with flag -un or --username, choose the output.pdf name to be your_username_cl_jobpos.pdf
+            verbose (_type_): if True, compilation will output information of process
         """
 
         # Banner
@@ -69,7 +76,7 @@ def register_compile_command(cli: click.Group) -> None:
             replacements,
             stem_replacement=f"{username}_{addon_name}",
         )
-        compile_tex(to_feed)
+        compile_tex(to_feed, verbose=verbose)
 
         click.echo()
         click.echo(
@@ -81,11 +88,11 @@ def register_compile_command(cli: click.Group) -> None:
 
         # Ask yes/no after compile
         if click.confirm(
-            click.style("Would you like to save this job info in CSV?", fg="cyan"),
+            click.style("Would you like to save this job info in CSV?", fg=COMMAND_COLORS['save']),
             default=False,
         ):
             click.echo(
-                click.style("Storing job info in CSV...", fg="cyan")
+                click.style("Storing job info in CSV...", fg=COMMAND_COLORS['save'])
             )
             csv_path = save_job_in_csv(
                 career=replacements["career"],
@@ -95,9 +102,11 @@ def register_compile_command(cli: click.Group) -> None:
                 job_link=replacements['job_link'],
             )
             click.echo(
-                click.style("Saved ", fg="cyan", bold=True)
+                click.style("Saved ", fg=COMMAND_COLORS['save'], bold=True)
                 + click.style("Job info stored at: ", fg="white")
                 + click.style(f"{csv_path}_jobs.csv")
             )
+            click.echo()
         else:
-            click.echo(click.style("Job info not saved in CSV.", fg="cyan"))
+            click.echo(click.style("Job info not saved in CSV.", fg=COMMAND_COLORS['save']))
+            click.echo()

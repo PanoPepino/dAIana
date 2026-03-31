@@ -30,6 +30,9 @@ dependencies = [
 [project.scripts]
 daiana = "daiana.cli:cli"
 
+[project.optional-dependencies]
+dev = ["pytest"]
+
 [project.urls]
 Homepage = "https://github.com/PanoPepino/daiana"
 Repository = "https://github.com/PanoPepino/daiana"

@@ -3,6 +3,7 @@ from pathlib import Path
 import click
 import json
 
+from daiana.utils.constants import FIELDNAMES
 from daiana.utils.styles import *
 
 
@@ -100,3 +101,11 @@ def history_format_display(history_json: str,
 
     except:
         pass
+
+
+def filter_job_dict(job: dict) -> dict:
+    """
+    Keep only the fields that save_job_in_csv expects.
+    """
+    expected = FIELDNAMES
+    return {k: v for k, v in job.items() if k in expected}
