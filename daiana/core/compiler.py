@@ -3,9 +3,12 @@ import subprocess
 import shutil
 import os
 import tempfile
+
+from daiana.utils.for_latex import render_template
 from typing import Optional
 from pathlib import Path
 from daiana.utils.for_latex import *
+from daiana.utils.constants import MODE_CONFIG, COMMAND_COLORS
 
 
 def check_pdflatex() -> bool:
@@ -152,8 +155,110 @@ def compile_tex(
                     f.unlink()
             tex_path.unlink()  # To clean the copied .tex file
 
-        open_pdf(pdf_path)
-
     if not silent:
         click.echo(f"✓ {pdf_path}")
     return pdf_path
+
+
+def get_mode_config(mode: str) -> dict:
+    if mode not in MODE_CONFIG:
+        raise ValueError("Use mode='cv' or mode='cl'")
+    return MODE_CONFIG[mode]
+
+
+def build_replacements(mode: str, data: dict) -> dict:
+    config = get_mode_config(mode)
+
+    replacements = {
+        "career": data.get("career", ""),
+        "job_position": data.get("job_position", ""),
+        "company_name": data.get("company_name", ""),
+        "location": data.get("location", ""),
+        "job_link": data.get("job_link", ""),
+    }
+
+    if mode == "cl":
+        replacements.update(
+            {
+                "your_background": data.get("your_background", ""),
+                "sentence_first_paragraph": data.get("sentence_first_paragraph", ""),
+                "cp_latex": f"\\body{replacements['career']}" if replacements["career"] else "",
+            }
+        )
+
+    return replacements
+
+
+def render_and_compile(mode: str, username: str, replacements: dict, verbose: bool = False):
+    config = get_mode_config(mode)
+
+    to_feed = render_template(
+        config["template"],
+        replacements,
+        stem_replacement=f"{username}_{config['addon_name']}",
+    )
+    path = compile_tex(to_feed, verbose=verbose)
+    return config["template"], path
+
+
+def _resolve_mode(mode: str | None) -> str:
+    if mode not in {"cv", "cl"}:
+        raise click.ClickException("Use exactly one mode: --cv or --cl")
+    return mode
+
+
+def _ask_for_missing(field_name: str, label: str, data: dict, default: str = "") -> str:
+    value = data.get(field_name)
+    if value not in (None, ""):
+        return value
+    return click.prompt(
+        click.style(label, fg="white", bold=True),
+        default=default,
+        show_default=bool(default),
+    )
+
+
+def _collect_compile_data(mode: str, seed_data: dict | None = None) -> dict:
+    seed_data = seed_data or {}
+
+    click.echo(click.style("In case of missing fields, please, fill these in: ", fg=COMMAND_COLORS["compile"]))
+    click.echo()
+
+    resolved = {}
+    resolved["career"] = _ask_for_missing("career", "1) Career", seed_data)
+    resolved["job_position"] = _ask_for_missing("job_position", "2) Job Position", seed_data)
+    resolved["company_name"] = _ask_for_missing("company_name", "3) Company Name", seed_data)
+    resolved["location"] = _ask_for_missing("location", "4) Job Location", seed_data)
+    resolved["job_link"] = _ask_for_missing("job_link", "5) Job Link", seed_data, default="")
+
+    if mode == "cl":
+        resolved["your_background"] = _ask_for_missing(
+            "your_background",
+            "Your tailored background",
+            seed_data,
+        )
+        resolved["sentence_first_paragraph"] = _ask_for_missing(
+            "sentence_first_paragraph",
+            "The company's challenge(s)",
+            seed_data,
+        )
+
+    return resolved
+
+
+def compile_with_data(
+    *,
+    mode: str,
+    username: str,
+    verbose: bool,
+    seed_data: dict | None = None,
+):
+    replacements = _collect_compile_data(mode, seed_data)
+    replacements = build_replacements(mode, replacements)
+    template, path = render_and_compile(
+        mode=mode,
+        username=username,
+        replacements=replacements,
+        verbose=verbose,
+    )
+    return replacements, template, path

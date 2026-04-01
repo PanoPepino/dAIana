@@ -1,6 +1,46 @@
+import os
+import json
+import re
+
+
+from daiana.utils.for_oracle import scrape_job_text
+from openai import OpenAI
+from dotenv import load_dotenv
 from openai import OpenAI  # or TO BE changed for other client if required
 from daiana.utils.for_oracle import *
 from daiana.utils.prompts import JOB_PROMPT, SENTENCE_PROMPT, SENTENCE_SCHEMA
+
+
+def _clean_llm_json(raw: str) -> str:
+    if not isinstance(raw, str):
+        raise ValueError("Oracle response must be a string before JSON parsing")
+
+    cleaned = raw.strip()
+
+    if cleaned.startswith("```"):
+        cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned, flags=re.IGNORECASE)
+        cleaned = re.sub(r"\s*```$", "", cleaned)
+
+    cleaned = cleaned.replace("\u00a0", " ")
+    cleaned = cleaned.strip()
+
+    return cleaned
+
+
+def parse_oracle_json(raw: str) -> dict:
+    cleaned = _clean_llm_json(raw)
+
+    try:
+        data = json.loads(cleaned)
+    except json.JSONDecodeError as exc:
+        raise ValueError(
+            f"Oracle returned invalid JSON: {exc}\nRaw: {raw}"
+        ) from exc
+
+    if not isinstance(data, dict):
+        raise ValueError("Oracle JSON must decode into a dictionary")
+
+    return data
 
 
 def extract_job_via_oracle(job_text: str,
@@ -72,7 +112,7 @@ def write_sentence_via_oracle(job_text: str,
             {"role": "system", "content": SENTENCE_PROMPT},
             {"role": "user",   "content": user_content},
         ],
-        temperature=0.2
+        temperature=0.25
     )
 
     raw = response.choices[0].message.content.strip()
@@ -87,5 +127,65 @@ def write_sentence_via_oracle(job_text: str,
         raise ValueError(
             f"Sentence prefix mismatch. Got:\n{sentence}"
         )
+
+    return result
+
+
+def build_perplexity_client() -> OpenAI:
+    """
+    Func to call the API service. Probably will be enhanced in future.
+
+    Returns:
+        OpenAI: the AI ready to eat a prompt
+    """
+
+    load_dotenv()
+    api_key = os.getenv("PERPLEXITY_API_KEY")
+    if not api_key:
+        raise ValueError("PERPLEXITY_API_KEY not found in environment or .env")
+    return OpenAI(
+        api_key=api_key,
+        base_url="https://api.perplexity.ai",
+    )
+
+
+def run_oracle_pipeline(
+        url: str,
+        *,
+        extract: bool = False,
+        tailor_cl: bool = False,
+        client: OpenAI | None = None) -> dict:
+    """
+    The oracle pipeline. You can pass two flags at the moment to oracle. One for extract info of the job position and another one to tailor parts of your cover letter based on the information scrapped.
+
+    Args:
+        url (str): The url to the job position info.
+        extract (bool, optional): The flag to simply scrap and extract info. Defaults to False.
+        tailor_cl (bool, optional): The flag to scrap and craft a simple tailored sentence on how you can contribute to the job position. Defaults to False.
+        client (OpenAI | None, optional): _description_. Defaults to None.
+
+
+    Returns:
+        dict: The extracted/crafted information
+    """
+    if not extract and not tailor_cl:
+        raise ValueError("At least one mode must be enabled: extract or tailor_cl")
+
+    client = client or build_perplexity_client()
+    job_text = scrape_job_text(url)
+
+    result: dict = {}
+
+    if extract:
+        job_data = extract_job_via_oracle(job_text, url, client)
+        if not isinstance(job_data, dict):
+            raise ValueError("extract_job_via_oracle() must return a dict")
+        result.update(job_data)
+
+    if tailor_cl:
+        sentence_info = write_sentence_via_oracle(job_text, url, client)
+        if not isinstance(sentence_info, dict):
+            raise ValueError("write_sentence_via_oracle() must return a dict")
+        result.update(sentence_info)
 
     return result

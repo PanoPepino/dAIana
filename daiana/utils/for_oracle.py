@@ -57,7 +57,7 @@ def edit_oracle_dict(job: dict) -> dict:
     click.secho("Please review and edit each field (just press Enter to keep current value).\n",
                 fg=COMMAND_COLORS['update'])
 
-    for key in FIELDNAMES:
+    for key in job.keys():
         current = job.get(key, "") or ""
         new = click.prompt(f"  {key:14}", default=current, type=str)
         if new.strip():

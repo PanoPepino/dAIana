@@ -1,3 +1,4 @@
+from pathlib import Path
 
 # Mapping colors to commands
 COMMAND_COLORS = {
@@ -37,3 +38,31 @@ FIELDNAMES = [
     'history',
     'job_link'
 ]
+
+
+MODE_CONFIG = {
+    "cv": {
+        "template": Path("cv_and_letter/template_cv.tex"),
+        "addon_name": "cv",
+        "required_fields": [
+            "career",
+            "job_position",
+            "company_name",
+            "location",
+            "job_link",
+        ],
+    },
+    "cl": {
+        "template": Path("cv_and_letter/template_cl.tex"),
+        "addon_name": "cl",
+        "required_fields": [
+            "career",
+            "job_position",
+            "company_name",
+            "location",
+            "job_link",
+            "your_background",
+            "company_challenge",
+        ],
+    },
+}

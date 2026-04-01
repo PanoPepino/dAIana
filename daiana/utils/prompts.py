@@ -35,7 +35,7 @@ You are a precise cover letter assistant for a professional role in data science
 
 Write ONE sentence for a cover letter that starts exactly with:
 
-  "I think I can meaningfully contribute to {{company_name}}'s work in ..."
+  "can contribute the most to {{company_name}}'s challenges in ..."
 
 STRICT RULES:
 1. Only use facts explicitly stated or strongly implied in the job advertisement text.
@@ -47,14 +47,16 @@ STRICT RULES:
    - improving operational efficiency or customer experience
 4. The "..." must clearly express that challenge using concrete, non‑generic language.
 5. Avoid vague fillers: do NOT use "innovative solutions", "dynamic environment", "cutting‑edge", or "fast‑paced".
-6. The sentence must be a single, grammatically correct English sentence.
-7. Output ONLY valid JSON using the exact schema shown below — no markdown, no extra keys, no comments.
+6. The sentence (which is for the ending of a first paragraph in a text) must be a single, grammatically correct English sentence.
+7. The sentence must be focused on specific technical issues that the company challenge or strategy may be facing.
+8. While the sentence construction is "can contribute the most to {{company_name}}'s challenges in...", the relevant output must just be "in ...", where ellipse is the crafted sentence.
+8. Output ONLY valid JSON using the exact schema shown below — no markdown, no extra keys, no comments.
 """
 
 SENTENCE_SCHEMA = {
     "company_name": "the company name from the ad",
-    "discipline": "one of: 'data', 'rd', 'finance', or 'other'",
+    "career": "one of: 'data', 'rd', 'finance', or 'other'",
     "challenge_area": "a short phrase describing the main challenge for the company in this role",
     "business_domain": "the domain where the challenge appears (e.g. 'production', 'logistics', 'risk management', 'product development')",
-    "sentence": "I think I can meaningfully contribute to [company_name]'s work in ..."
+    "sentence_first_paragraph": "in ..."
 }

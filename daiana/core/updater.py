@@ -1,3 +1,4 @@
+from daiana.utils.for_csv import history_format_display
 import csv
 from pathlib import Path
 from datetime import date
@@ -119,3 +120,23 @@ def write_rows(csv_path: Path,
         writer = csv.DictWriter(f, fieldnames=FIELDNAMES, extrasaction="ignore")
         writer.writeheader()
         writer.writerows(rows)
+
+
+def select_matching_row(rows: list[dict], position: str, company: str) -> tuple[int, dict] | None:
+    matches = find_rows(rows, position, company)
+
+    if not matches:
+        return None
+
+    if len(matches) == 1:
+        return matches[0]
+
+    return matches
+
+
+def apply_status_update(rows: list[dict], row_index: int, new_status: str) -> None:
+    update_history(rows, row_index, new_status)
+
+
+def apply_field_update(rows: list[dict], row_index: int, field_name: str, new_value: str) -> None:
+    edit_entry(rows, row_index, field_name, new_value)
