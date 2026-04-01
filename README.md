@@ -99,7 +99,7 @@ Allowed statuses are defined in `daiana/utils/constants.py`.
 
 Scrapes a job posting URL and sends the text to an LLM (Perplexity `sonar` / `sonar-pro`) to extract structured job information and, optionally, a tailored cover letter phrase.
 
-At least one of `--extract` or `--tailor-cl` must be passed. You can use both together.
+At least one of `--extract` or `--tailor_cl` must be passed. You can use both together.
 
 **Flags:**
 
@@ -107,7 +107,7 @@ At least one of `--extract` or `--tailor-cl` must be passed. You can use both to
 |------|-------------|
 | `--url` / `-u` | URL of the job posting *(required)* |
 | `--extract` | Extract structured job info: position, company, location, career, and link |
-| `--tailor-cl` | Craft a tailored phrase for the first paragraph of your cover letter |
+| `--tailor_cl` | Craft a tailored phrase for the first paragraph of your cover letter |
 
 **`--extract` output fields:**
 
