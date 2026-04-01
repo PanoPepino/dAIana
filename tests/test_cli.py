@@ -82,16 +82,16 @@ def test_update_help():
     result = _run_cli(["update", "--help"], check=False)
     output = result.stdout + result.stderr
     assert result.returncode == 0
-    assert "update" in output
+    assert "Update the status of a saved job application" in output
     assert "Options:" in output
 
 
-# def test_hunt_help():
-#     result = _run_cli(["hunt", "--help"], check=False)
-#     output = result.stdout + result.stderr
-#     assert result.returncode == 0
-#     assert "hunt" in output
-#     assert "Options:" in output
+def test_hunt_help():
+    result = _run_cli(["hunt", "--help"], check=False)
+    output = result.stdout + result.stderr
+    assert result.returncode == 0
+    assert "Ask AI, choose skills, compile documents & track job" in output
+    assert "Options:" in output
 
 
 def test_oracle_help():
