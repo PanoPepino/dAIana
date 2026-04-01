@@ -4,10 +4,9 @@ import shutil
 import os
 import tempfile
 
-from daiana.utils.for_latex import render_template
 from typing import Optional
 from pathlib import Path
-from daiana.utils.for_latex import *
+from daiana.utils.for_latex import render_template, replace_newcommand, latex_escape
 from daiana.utils.constants import MODE_CONFIG, COMMAND_COLORS
 
 
@@ -23,14 +22,12 @@ def detect_project_root(tex_file: Path) -> Path:
 
 
 def build_texinputs(tmp_root: Path) -> str:
-    paths = ["./"]  # Current dir first
+    paths = ["./"]
 
-    # Conditional: Only add cls/ if it exists (skip for system ModernCV)
     cls_dir = tmp_root / 'cls'
     if cls_dir.exists() and any(cls_dir.glob('*.cls')):
         paths.append(f"{tmp_root / 'cls'}//")
 
-    # Always add loader/ for your preamble
     paths.append(f"{tmp_root / 'loader'}//")
 
     prefix = ":".join(paths) + ":"
@@ -62,16 +59,13 @@ def compile_tex(
         silent: bool = True,
         passes: int = 2) -> Path:
     """
-
-    The infamous compiler. To be documented.
+    Compile a .tex file to PDF using pdflatex.
 
     Raises:
-        click.ClickException: _description_
-        click.ClickException: _description_
-        click.ClickException: _description_
+        click.ClickException: if pdflatex is missing, the tex file is missing, or no PDF is produced.
 
     Returns:
-        _type_: _description_
+        Path: the path to the generated PDF.
     """
 
     if not check_pdflatex():
@@ -85,14 +79,11 @@ def compile_tex(
     root = Path(project_root).absolute() if project_root else detect_project_root(tex_path)
     if relative_output_dir is None:
         relative_output_dir = 'output'
-    else:
-        pass
-    pdf_path = root/relative_output_dir/f"{stem}.pdf"
+    pdf_path = root / relative_output_dir / f"{stem}.pdf"
 
     with tempfile.TemporaryDirectory(prefix="daiana-") as tmp_str:
         tmp_root = Path(tmp_str)
 
-        # Mirror project structure
         for item in root.iterdir():
             dest = tmp_root / item.name
             if item.is_file():
@@ -115,7 +106,6 @@ def compile_tex(
             str(tmp_tex)
         ]
 
-        # ✅ 2 PASSES for moderncv
         for i in range(passes):
             if silent:
                 result = subprocess.run(
@@ -130,20 +120,20 @@ def compile_tex(
 
             if verbose:
                 log_text = read_log(log_path)
-                click.echo(f"📋 Pass {i+1}/{passes}:", err=True)
+                click.echo(f"\U0001f4cb Pass {i+1}/{passes}:", err=True)
                 click.echo(extract_errors(log_text)[-500:], err=True)
             elif not silent and result.returncode != 0:
                 log_text = read_log(log_path)
-                click.secho(f"⚠ Pass {i+1}/{passes} failed", fg="red", err=True)
+                click.secho(f"\u26a0 Pass {i+1}/{passes} failed", fg="red", err=True)
                 click.echo(extract_errors(log_text), err=True)
             elif not silent:
-                click.echo(f"✓ Pass {i+1}/{passes}")
+                click.echo(f"\u2713 Pass {i+1}/{passes}")
 
         tmp_pdf = tmp_tex_dir / f"{stem}.pdf"
         if not tmp_pdf.exists():
             if verbose:
                 log_text = read_log(log_path)
-                click.echo(f"\n❌ No PDF. Log:\n{log_text}")
+                click.echo(f"\n\u274c No PDF. Log:\n{log_text}")
             raise click.ClickException("No PDF produced.")
 
         shutil.move(tmp_pdf, pdf_path)
@@ -153,10 +143,11 @@ def compile_tex(
                 f = tmp_tex_dir / f"{stem}{ext}"
                 if f.exists():
                     f.unlink()
-            tex_path.unlink()  # To clean the copied .tex file
+            if tex_path.exists():
+                tex_path.unlink()
 
     if not silent:
-        click.echo(f"✓ {pdf_path}")
+        click.echo(f"\u2713 {pdf_path}")
     return pdf_path
 
 

@@ -1,8 +1,7 @@
 import click
-from pathlib import Path
 
 from daiana.core.compiler import _resolve_mode, compile_with_data
-from daiana.core.saver import *
+from daiana.core.saver import save_job_in_csv
 from daiana.utils.styles import DaianaCommand, command_banner, COMMAND_COLORS
 
 
@@ -21,7 +20,7 @@ def register_compile_command(cli: click.Group) -> None:
         mode = _resolve_mode(mode)
 
         try:
-            replacements, template = compile_with_data(
+            replacements, template, path = compile_with_data(
                 mode=mode,
                 username=username,
                 verbose=verbose,

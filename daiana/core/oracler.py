@@ -2,12 +2,10 @@ import os
 import json
 import re
 
-
-from daiana.utils.for_oracle import scrape_job_text
+from typing import Dict
+from daiana.utils.for_oracle import scrape_job_text, unicode_to_utf8, clean_city_location, edit_oracle_dict
 from openai import OpenAI
 from dotenv import load_dotenv
-from openai import OpenAI  # or TO BE changed for other client if required
-from daiana.utils.for_oracle import *
 from daiana.utils.prompts import JOB_PROMPT, SENTENCE_PROMPT, SENTENCE_SCHEMA
 
 
@@ -33,9 +31,19 @@ def parse_oracle_json(raw: str) -> dict:
     try:
         data = json.loads(cleaned)
     except json.JSONDecodeError as exc:
-        raise ValueError(
-            f"Oracle returned invalid JSON: {exc}\nRaw: {raw}"
-        ) from exc
+        # Second attempt: extract first {...} block
+        brace_match = re.search(r"\{.*\}", cleaned, re.DOTALL)
+        if brace_match:
+            try:
+                data = json.loads(brace_match.group())
+            except json.JSONDecodeError:
+                raise ValueError(
+                    f"Oracle returned invalid JSON: {exc}\nRaw: {raw}"
+                ) from exc
+        else:
+            raise ValueError(
+                f"Oracle returned invalid JSON: {exc}\nRaw: {raw}"
+            ) from exc
 
     if not isinstance(data, dict):
         raise ValueError("Oracle JSON must decode into a dictionary")
@@ -43,9 +51,23 @@ def parse_oracle_json(raw: str) -> dict:
     return data
 
 
-def extract_job_via_oracle(job_text: str,
-                           url: str,
-                           client: OpenAI) -> Dict[str, str]:
+_REQUIRED_JOB_FIELDS = ("job_position", "company_name", "career", "location", "job_link")
+_VALID_CAREERS = {"data", "rd", "quant"}
+
+
+def _validate_job_data(data: dict, url: str) -> dict:
+    """Ensure all required fields exist and career is valid. Fill missing with safe defaults."""
+    for field in _REQUIRED_JOB_FIELDS:
+        if field not in data or data[field] is None:
+            data[field] = ""
+    if not data["job_link"]:
+        data["job_link"] = url
+    if data["career"] not in _VALID_CAREERS:
+        data["career"] = "rd"  # safe default
+    return data
+
+
+def extract_job_via_oracle(job_text: str, url: str, client: OpenAI) -> Dict[str, str]:
 
     schema = {
         "job_position": "",
@@ -64,7 +86,7 @@ def extract_job_via_oracle(job_text: str,
         f"{schema_json}\n\n"
         "Rules again:\n"
         "1) Job position must be in English.\n"
-        "2) Location (i.e. city) must be only the city, in UTF‑8, no Unicode escapes.\n"
+        "2) Location (i.e. city) must be only the city, in UTF-8, no Unicode escapes.\n"
         "3) For career, choose exactly one of \"data\", \"rd\", or \"quant\"."
     )
 
@@ -79,17 +101,28 @@ def extract_job_via_oracle(job_text: str,
 
     raw = response.choices[0].message.content.strip()
     decoded = unicode_to_utf8(raw)
-    job_data = json.loads(decoded)
-
-    # Cleanup location
+    job_data = parse_oracle_json(decoded)
+    job_data = _validate_job_data(job_data, url)
     job_data["location"] = clean_city_location(job_data["location"])
 
     return job_data
 
 
-def write_sentence_via_oracle(job_text: str,
-                              url: str,
-                              client: OpenAI) -> Dict[str, str]:
+_REQUIRED_SENTENCE_FIELDS = (
+    "company_name", "career", "challenge_area",
+    "business_domain", "sentence_first_paragraph"
+)
+
+
+def _validate_sentence_data(data: dict) -> dict:
+    """Ensure all sentence schema fields exist. Fill missing with empty string."""
+    for field in _REQUIRED_SENTENCE_FIELDS:
+        if field not in data or data[field] is None:
+            data[field] = ""
+    return data
+
+
+def write_sentence_via_oracle(job_text: str, url: str, client: OpenAI) -> Dict[str, str]:
 
     schema_json = json.dumps(SENTENCE_SCHEMA, ensure_ascii=False, separators=(",", ":"))
 
@@ -97,12 +130,12 @@ def write_sentence_via_oracle(job_text: str,
         f"Job advertisement URL: {url}\n\n"
         f"Job advertisement text:\n{job_text}\n\n"
         "Instructions:\n"
-        "Step 1 — Read the job text carefully and fill 'evidence_challenges' with 1-3 "
+        "Step 1 — Read the job text carefully and fill 'challenge_area' with 1-3 "
         "specific challenges or priorities the COMPANY faces, using words from the text.\n"
-        "Step 2 — Fill 'role_impact_area' with what this specific role is meant to solve.\n"
-        "Step 3 — Write 'sentence' using ONLY what you found in Steps 1 and 2.\n"
-        "Step 4 — If the text contains NO clear company challenge, set 'sentence' to "
-        "an empty string and explain in 'evidence_challenges' why.\n\n"
+        "Step 2 — Fill 'business_domain' with what this specific role is meant to solve.\n"
+        "Step 3 — Write 'sentence_first_paragraph' using ONLY what you found in Steps 1 and 2.\n"
+        "Step 4 — If the text contains NO clear company challenge, set 'sentence_first_paragraph' to "
+        "an empty string and explain in 'challenge_area' why.\n\n"
         f"Output ONLY valid JSON using this exact schema:\n{schema_json}"
     )
 
@@ -116,29 +149,19 @@ def write_sentence_via_oracle(job_text: str,
     )
 
     raw = response.choices[0].message.content.strip()
-
-    try:
-        result: Dict[str, str] = json.loads(raw)
-    except json.JSONDecodeError as e:
-        raise ValueError(f"Oracle returned invalid JSON: {e}\nRaw: {raw}")
-
-    sentence = result.get("sentence", "")
-    if sentence and not sentence.startswith("I think I can meaningfully contribute to"):
-        raise ValueError(
-            f"Sentence prefix mismatch. Got:\n{sentence}"
-        )
+    result: Dict[str, str] = parse_oracle_json(raw)
+    result = _validate_sentence_data(result)
 
     return result
 
 
 def build_perplexity_client() -> OpenAI:
     """
-    Func to call the API service. Probably will be enhanced in future.
+    Build and return the Perplexity API client.
 
     Returns:
-        OpenAI: the AI ready to eat a prompt
+        OpenAI: the AI client ready to process prompts.
     """
-
     load_dotenv()
     api_key = os.getenv("PERPLEXITY_API_KEY")
     if not api_key:
@@ -156,17 +179,16 @@ def run_oracle_pipeline(
         tailor_cl: bool = False,
         client: OpenAI | None = None) -> dict:
     """
-    The oracle pipeline. You can pass two flags at the moment to oracle. One for extract info of the job position and another one to tailor parts of your cover letter based on the information scrapped.
+    Run the oracle pipeline to extract job info and/or craft tailored cover letter sentences.
 
     Args:
-        url (str): The url to the job position info.
-        extract (bool, optional): The flag to simply scrap and extract info. Defaults to False.
-        tailor_cl (bool, optional): The flag to scrap and craft a simple tailored sentence on how you can contribute to the job position. Defaults to False.
-        client (OpenAI | None, optional): _description_. Defaults to None.
-
+        url (str): The URL to the job position.
+        extract (bool): Scrape and extract structured job info.
+        tailor_cl (bool): Scrape and craft a tailored cover letter sentence.
+        client (OpenAI | None): Optional pre-built API client (useful for tests).
 
     Returns:
-        dict: The extracted/crafted information
+        dict: The extracted/crafted information.
     """
     if not extract and not tailor_cl:
         raise ValueError("At least one mode must be enabled: extract or tailor_cl")
