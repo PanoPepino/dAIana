@@ -6,7 +6,7 @@ import tempfile
 
 from typing import Optional
 from pathlib import Path
-from daiana.utils.for_latex import render_template, replace_newcommand, latex_escape
+from daiana.utils.for_latex import render_template
 from daiana.utils.constants import MODE_CONFIG, COMMAND_COLORS
 
 
