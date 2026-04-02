@@ -31,7 +31,6 @@ env/
 .pytest_cache/
 .coverage
 htmlcov/
-fake_directory/
 
 # Distribution
 *.tar.gz

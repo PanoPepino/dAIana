@@ -1,0 +1,117 @@
+% ============================================================================
+% MODERNCV PREAMBLE - Color Configuration
+% ============================================================================
+
+
+\renewcommand{\labelitemi}{\textbullet}
+\renewcommand{\labelitemii}{\textbullet}
+
+
+% ============================================================================
+% FONT AND ENCODING PACKAGES
+% ============================================================================
+\usepackage[utf8]{inputenc}        % UTF-8 input encoding for international characters
+\usepackage[T1]{fontenc}           % T1 font encoding for proper European character rendering
+%\usepackage{tgheros}              % Optional: Provides Arial-like fonts (commented out)
+
+% ============================================================================
+% LANGUAGE AND LOCALIZATION
+% ============================================================================
+\usepackage[english]{babel}        % Language support: hyphenation, date formats, localization
+
+% ============================================================================
+% PAGE LAYOUT AND GEOMETRY
+% ============================================================================
+\usepackage{geometry}              % Comprehensive page layout control
+
+% ============================================================================
+% MATHEMATICAL TYPESETTING
+% ============================================================================
+\usepackage{amsmath}               % Enhanced mathematical typesetting and equation environments
+\usepackage{amssymb}               % Additional mathematical symbols from AMS
+
+% ============================================================================
+% GRAPHICS AND FIGURES
+% ============================================================================
+\usepackage{graphicx}              % Enhanced graphics inclusion with scaling and rotation
+\usepackage{svg}                   % Inclusion of SVG vector graphics
+\usepackage{svgcolor}              % Color support for SVG graphics
+\usepackage{float}                 % Enhanced float placement control ([H] option)
+\usepackage{wrapfig}               % Text wrapping around figures and tables
+\usepackage{capt-of}               % Captions in non-float environments
+
+% ============================================================================
+% TABLES AND TABULAR ENVIRONMENTS
+% ============================================================================
+\usepackage{array}                 % Extended tabular environments with custom column types
+\usepackage{booktabs}              % Professional table formatting with better spacing rules
+\usepackage{makecell}              % Multi-line cells and custom formatting in tables
+
+% ============================================================================
+% BOXES AND FRAMES
+% ============================================================================
+\usepackage{tcolorbox}             % Colored boxes, frames, and sophisticated containers
+
+% ============================================================================
+% TEXT FORMATTING AND ALIGNMENT
+% ============================================================================
+\usepackage{ragged2e}              % Improved text alignment commands
+
+% ============================================================================
+% CITATIONS AND BIBLIOGRAPHY
+% ============================================================================
+\usepackage{cite}                  % Improved citation formatting and compression
+
+% ============================================================================
+% PROGRAMMING AND UTILITIES
+% ============================================================================
+\usepackage{etoolbox}              % Programming tools and boolean tests for LaTeX
+
+% ============================================================================
+% SPECIAL SYMBOLS
+% ============================================================================
+\usepackage{eurosym}               % Euro currency symbol (€)
+
+% ============================================================================
+% TABLE AND CELL FORMATTING (TCOLORBOX/MAKECELL)
+% ============================================================================
+\renewcommand\cellalign{lc}        % Cell alignment: left-center
+\setcellgapes{6pt}                 % Vertical padding between cells (default: 6pt, adjust as needed)
+\makegapedcells                    % Apply cell gap settings
+
+% ============================================================================
+% BIBLIOGRAPHY CUSTOMIZATION
+% ============================================================================
+\renewcommand*{\bibliographyitemlabel}{[\arabic{enumiv}]}  % Numbered bibliography items
+
+% ============================================================================
+% HYPERLINK CONFIGURATION
+% ============================================================================
+\PassOptionsToPackage{
+    colorlinks = true,             % Colored links instead of boxes
+    linkcolor = color1,            % Internal link color (adjust: color1 or blue_for_mint)
+    citecolor = color1,            % Citation link color
+    urlcolor = color1              % URL link color
+}{hyperref}
+
+% ============================================================================
+% DOCUMENT-SPECIFIC GEOMETRY
+% ============================================================================
+\geometry{
+    paper=a4paper,
+    top=2cm,                     % Adjust per document type
+    bottom=2cm,
+    left=2.5cm,
+    right=2.5cm,
+    headheight=2cm,
+    footskip=1cm,
+    headsep=0cm}
+
+
+
+
+
+
+% ============================================================================
+% END OF PREAMBLE
+% ============================================================================
