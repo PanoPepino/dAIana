@@ -1,23 +1,27 @@
-import click
+import typer
+from typing import Optional
 
 from daiana.core.compiler import _resolve_mode, compile_with_data
 from daiana.core.saver import save_job_in_csv
-from daiana.utils.styles import DaianaCommand, command_banner, COMMAND_COLORS
+from daiana.utils.styles import command_banner, rgb_to_ansi
+from daiana.utils.constants import COMMAND_COLORS
 
 
-def register_compile_command(cli: click.Group) -> None:
-    @cli.command("compile", cls=DaianaCommand, help="Compile CV or cover letter for a job position. Optional saving in .csv database")
-    @click.option("--cv", "mode", flag_value="cv", help="CV mode")
-    @click.option("--cl", "mode", flag_value="cl", help="Cover letter mode")
-    @click.option("--username", "-un", default="user_name", help="Your name to appear in PDF name")
-    @click.option("--verbose", is_flag=True, help="Latex compilation will provide information")
-    def compile_from_template(mode: str | None, username: str, verbose: bool) -> None:
+def register_compile_command(app: typer.Typer) -> None:
+    @app.command("compile", help="Compile CV or cover letter for a job position. Optional saving in .csv database.")
+    def compile_from_template(
+        cv:       bool = typer.Option(False, "--cv",       help="CV mode"),
+        cl:       bool = typer.Option(False, "--cl",       help="Cover letter mode"),
+        username: str  = typer.Option("user_name", "--username", "-un", help="Your name for PDF filename"),
+        verbose:  bool = typer.Option(False, "--verbose",  help="Show LaTeX compilation output"),
+    ) -> None:
         command_banner(
             "dAIana compiler: CV & cover letter sharpening tool",
             COMMAND_COLORS["compile"],
         )
 
-        mode = _resolve_mode(mode)
+        mode_str: Optional[str] = "cv" if cv else ("cl" if cl else None)
+        mode = _resolve_mode(mode_str)
 
         try:
             replacements, template, path = compile_with_data(
@@ -27,21 +31,22 @@ def register_compile_command(cli: click.Group) -> None:
                 seed_data=None,
             )
         except Exception as exc:
-            raise click.ClickException(f"Compilation failed: {exc}") from exc
+            typer.secho(f"Compilation failed: {exc}", fg="red")
+            raise typer.Exit(1)
 
-        click.echo()
-        click.echo(
-            click.style("Compiled! ", fg=COMMAND_COLORS["compile"], bold=True)
-            + click.style("see the PDF generated from: ", fg="white")
-            + click.style(f"{template.name}")
+        typer.echo()
+        typer.echo(
+            typer.style("Compiled! ", fg=rgb_to_ansi(COMMAND_COLORS["compile"]), bold=True)
+            + typer.style("see the PDF generated from: ", fg="white")
+            + typer.style(f"{template.name}")
         )
-        click.echo()
+        typer.echo()
 
-        if click.confirm(
-            click.style("Would you like to save this job info in CSV?", fg=COMMAND_COLORS["save"]),
+        if typer.confirm(
+            typer.style("Would you like to save this job info in CSV?", fg=rgb_to_ansi(COMMAND_COLORS["save"])),
             default=False,
         ):
-            click.echo(click.style("Storing job info in CSV...", fg=COMMAND_COLORS["save"]))
+            typer.echo(typer.style("Storing job info in CSV...", fg=rgb_to_ansi(COMMAND_COLORS["save"])))
             csv_path = save_job_in_csv(
                 career=replacements["career"],
                 job_position=replacements["job_position"],
@@ -49,12 +54,12 @@ def register_compile_command(cli: click.Group) -> None:
                 location=replacements["location"],
                 job_link=replacements["job_link"],
             )
-            click.echo(
-                click.style("Saved ", fg=COMMAND_COLORS["save"], bold=True)
-                + click.style("Job info stored at: ", fg="white")
-                + click.style(f"{csv_path}_jobs.csv")
+            typer.echo(
+                typer.style("Saved ", fg=rgb_to_ansi(COMMAND_COLORS["save"]), bold=True)
+                + typer.style("Job info stored at: ", fg="white")
+                + typer.style(f"{csv_path}_jobs.csv")
             )
-            click.echo()
+            typer.echo()
         else:
-            click.echo(click.style("Job info not saved in CSV.", fg=COMMAND_COLORS["save"]))
-            click.echo()
+            typer.echo(typer.style("Job info not saved in CSV.", fg=rgb_to_ansi(COMMAND_COLORS["save"])))
+            typer.echo()
