@@ -1,32 +1,30 @@
-import typer
+from daiana.utils.constants import STATUS_COLORS, ALLOW_STATUS, COMMAND_COLORS
 from typing import Dict
-from daiana.utils.constants import STATUS_COLORS, COMMAND_COLORS
-
-# ── Colour helpers ──────────────────────────────────────────────────────────
-# Typer/Click accept named ANSI colours as strings.
-# The original code stored colours as RGB tuples; we keep that dict here so
-# callers are unchanged, but we map them to nearest ANSI names for output.
-
-_RGB_TO_ANSI: dict[tuple[int, int, int], str] = {
-    (0, 200, 120):   "bright_green",   # forest_teal  → banner border
-    (200, 140, 100): "yellow",          # light_wood   → banner text
-    (180, 220, 255): "bright_cyan",     # compile
-    (255, 180, 100): "bright_yellow",   # save
-    (140, 200, 140): "green",           # show
-    (200, 150, 255): "bright_magenta",  # update
-    (255, 220, 100): "yellow",          # oracle
-    (100, 200, 255): "cyan",            # hunt
-}
+import click
 
 
-def rgb_to_ansi(color: tuple | str) -> str:
-    """Convert an RGB tuple to the nearest ANSI colour name Typer understands."""
-    if isinstance(color, str):
-        return color
-    return _RGB_TO_ANSI.get(color, "white")
+class DaianaCommand(click.Command):
+    """
+    Custom Click Command subclass that:
+    - Colors the help description line using the command's COMMAND_COLORS entry.
+    - Adds a blank line after the last option before the terminal prompt.
+    """
+
+    def format_help(self, ctx: click.Context, formatter: click.HelpFormatter) -> None:
+        # Resolve command color (fallback to white)
+        color = COMMAND_COLORS.get(self.name, (240, 240, 240))
+        click.echo()
+        # Color the description
+        if self.help:
+            click.echo(click.style(self.help, fg=color, bold=True))
+            click.echo()
+
+        # Render Usage + Options normally via formatter
+        # self.format_usage(ctx, formatter)
+        self.format_options(ctx, formatter)
 
 
-def get_status_color(action: str) -> Dict[str, str]:
+def get_status_color(action: str) -> Dict[str, any]:
     """
     Simple function to map a color to its associated status and/or date.
     """
@@ -34,11 +32,11 @@ def get_status_color(action: str) -> Dict[str, str]:
     return {"fg": coloring}
 
 
-def get_command_color(command: str, color: tuple | str) -> str:
+def get_command_color(command: str, color: str) -> str:
     """
     Simple function to map a color to its associated command.
     """
-    return typer.style(command, fg=rgb_to_ansi(color), bold=True)
+    return click.style(command, fg=color)
 
 
 def center_text(text: str, width: int) -> str:
@@ -47,29 +45,23 @@ def center_text(text: str, width: int) -> str:
     return " " * spaces + text
 
 
-def command_banner(title: str, cmd_color: tuple | str,
+def command_banner(title: str, cmd_color: tuple,
                    banner_width: int = 60) -> None:
     """
-    Single-line compact Daiana banner using Typer styling.
+    Single-line compact Diana banner.
     """
-    ansi = rgb_to_ansi(cmd_color)
     top_left, horiz, top_right = "\u250c", "\u2500", "\u2510"
     bot_left, bot_right = "\u2514", "\u2518"
 
-    box_top = typer.style(top_left + horiz * (banner_width - 2) + top_right, fg=ansi)
-    box_bot = typer.style(bot_left + horiz * (banner_width - 2) + bot_right, fg=ansi)
+    box_top = click.style(top_left + horiz*(banner_width-2) + top_right, fg=cmd_color)
+    box_bot = click.style(bot_left + horiz*(banner_width-2) + bot_right, fg=cmd_color)
 
     title_spaces = (banner_width - 2 - len(title)) // 2
-    title_line = (
-        typer.style("|", fg=ansi)
-        + " " * title_spaces
-        + typer.style(title, bold=True)
-        + " " * title_spaces
-        + typer.style("|", fg=ansi)
-    )
+    title_line = f"|{' ' * title_spaces}{click.style(title, bold=True)}{' ' * title_spaces}{click.style('|', fg=cmd_color)}"
+    box_title = click.style(title_line, fg=cmd_color)
 
-    typer.echo()
-    typer.echo(box_top)
-    typer.echo(title_line)
-    typer.echo(box_bot)
-    typer.echo()
+    click.echo()
+    click.echo(box_top)
+    click.echo(box_title)
+    click.echo(box_bot)
+    click.echo()

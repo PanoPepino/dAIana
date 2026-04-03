@@ -1,30 +1,36 @@
-import typer
+import click
 
 from daiana.core.saver import save_job_in_csv
 from daiana.utils.constants import COMMAND_COLORS
-from daiana.utils.styles import command_banner, rgb_to_ansi
+from daiana.utils.styles import DaianaCommand, command_banner
 
 
-def register_save_command(app: typer.Typer) -> None:
-    @app.command("save", help="Save a new job you have applied to in a .csv file.")
-    def save_job(
-        career: str = typer.Option(..., "--career", "-cp", help='Career path (e.g., "software")'),
-    ) -> None:
-        """Save jobs you have applied to in a .csv file for easier tracking."""
-        command_banner("dAIana saver: Store your job hunt trophies", COMMAND_COLORS["save"])
+def register_save_command(cli: click.Group) -> None:
+    @cli.command("save", cls=DaianaCommand, help="Save a new job you have applied to in a .csv file.")
+    @click.option('--career', '-cp', required=True, help='Career path (e.g., "software")')
+    def save_job(career: str) -> None:
+        """
+        Save the jobs you have applied to in a .csv file for easier tracking. A set of inputs will appear for easier storage.
+        """
 
-        typer.echo(typer.style("Fill in the fields below:", fg=rgb_to_ansi(COMMAND_COLORS["save"])))
-        typer.echo()
-
-        job_position = typer.prompt(typer.style("1) Job position", fg="white", bold=True))
-        company_name = typer.prompt(typer.style("2) Company name", fg="white", bold=True))
-        location     = typer.prompt(typer.style("3) Location",     fg="white", bold=True), default="")
-        job_link     = typer.prompt(
-            typer.style("4) Link to job description ", fg="white", bold=True)
-            + typer.style("(press ENTER if none)", fg="white"),
-            default="",
+        command_banner(
+            "dAIana saver: Store your job hunt trophies",
+            COMMAND_COLORS['save']
         )
-        typer.echo()
+
+        click.echo(click.style("Fill in the fields below:", fg=COMMAND_COLORS['save']))
+        click.echo()
+
+        job_position = click.prompt(click.style("1) Job position", fg="white", bold=True))
+        company_name = click.prompt(click.style("2) Company name", fg="white", bold=True))
+        location = click.prompt(click.style("3) Location", fg="white", bold=True), default='', show_default=False)
+        job_link = click.prompt(
+            click.style("4) Link to job description ", fg="white", bold=True) +
+            click.style('(press ENTER if none)', fg='white'),
+            default='',
+            show_default=False
+        )
+        click.echo()
 
         csv_path = save_job_in_csv(
             career=career,
@@ -33,9 +39,10 @@ def register_save_command(app: typer.Typer) -> None:
             location=location,
             job_link=job_link,
         )
-        typer.echo(
-            typer.style("Saved ", fg=rgb_to_ansi(COMMAND_COLORS["save"]), bold=True)
-            + typer.style("Job info stored at: ", fg="white")
-            + typer.style(f"{csv_path}_jobs.csv")
+
+        click.echo(
+            click.style("Saved ", fg=COMMAND_COLORS['save'], bold=True)
+            + click.style("Job info stored at: ", fg="white")
+            + click.style(f"{csv_path}_jobs.csv")
         )
-        typer.echo()
+        click.echo()
