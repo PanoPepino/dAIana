@@ -1,78 +1,77 @@
 #!/usr/bin/env python
-import click
+import typer
 
 from daiana.commands.compiler_cli import register_compile_command
-from daiana.commands.hunter_cli import register_hunt_command
-from daiana.commands.oracler_cli import register_oracle_command
-from daiana.commands.saver_cli import register_save_command
-from daiana.commands.shower_cli import register_show_command
-from daiana.commands.updater_cli import register_update_command
-from daiana.utils.styles import center_text, get_command_color, COMMAND_COLORS
+from daiana.commands.hunter_cli   import register_hunt_command
+from daiana.commands.oracler_cli  import register_oracle_command
+from daiana.commands.saver_cli    import register_save_command
+from daiana.commands.shower_cli   import register_show_command
+from daiana.commands.updater_cli  import register_update_command
+from daiana.utils.styles import center_text, get_command_color, rgb_to_ansi
+from daiana.utils.constants import COMMAND_COLORS
+
+app = typer.Typer(
+    name="daiana",
+    help="\U0001f3f9 dAIana \U0001f3f9 — AI assistant for Job Hunting",
+    add_completion=False,
+    invoke_without_command=True,
+)
 
 
-class DaianaGroup(click.Group):
-    def format_help(self, ctx, formatter) -> None:
-        forest_teal = (0, 200, 120)
-        light_wood = (200, 140, 100)
-        banner_width = 60
+@app.callback(invoke_without_command=True)
+def main(ctx: typer.Context) -> None:
+    """Print the dAIana banner when no subcommand is given."""
+    if ctx.invoked_subcommand is None:
+        forest_teal = "bright_green"
+        light_wood  = "yellow"
+        width = 60
 
-        banner_top = click.style("+" + "-"*(banner_width-2) + "+", fg=forest_teal)
-        banner_bot = click.style("+" + "-"*(banner_width-2) + "+", fg=forest_teal)
-
-        bow_daiana_bow = "\U0001f3f9 dAIana \U0001f3f9"
-        daiana_spaces = (banner_width - 3 - len(bow_daiana_bow)) // 2
-        daiana_line = (
-            f"{click.style('|', fg=light_wood)}"
-            f"{' ' * daiana_spaces}"
-            f"{click.style(bow_daiana_bow, fg=light_wood, bold=True)}"
-            f"{' ' * daiana_spaces}"
-            f"{click.style('|', fg=light_wood)}"
+        border = typer.style("+" + "-" * (width - 2) + "+", fg=forest_teal)
+        title_text = "\U0001f3f9 dAIana \U0001f3f9"
+        spaces = (width - 3 - len(title_text)) // 2
+        title_line = (
+            typer.style("|", fg=light_wood)
+            + " " * spaces
+            + typer.style(title_text, fg=light_wood, bold=True)
+            + " " * spaces
+            + typer.style("|", fg=light_wood)
         )
-        banner_daiana = click.style(daiana_line, fg=forest_teal)
+        sub_line = typer.style(
+            f"| {center_text('AI assistant for Job Hunting', width - 2)}              |",
+            fg=light_wood,
+        )
 
-        goddess_line = f"| {center_text('AI assistant for Job Hunting', banner_width-2)}              |"
-        banner_goddess = click.style(goddess_line, fg=light_wood)
+        typer.echo()
+        typer.echo(border)
+        typer.echo(title_line)
+        typer.echo(sub_line)
+        typer.echo(border)
+        typer.echo()
 
-        click.echo()
-        click.echo(banner_top)
-        click.echo(banner_daiana)
-        click.echo(banner_goddess)
-        click.echo(banner_bot)
-        click.echo()
+        typer.echo(typer.style(center_text("- Track & Update all your job applications -", width), fg=light_wood))
+        typer.echo(typer.style(center_text("- Compile CV & cover letter with AI help -",   width), fg=light_wood))
+        typer.echo()
+        typer.echo(typer.style("Hunt commands in this package:"))
+        typer.echo()
 
-        subtitle1 = "- Track & Update all your job applications -"
-        subtitle2 = "- Compile CV & cover letter with AI help -"
-        click.echo(click.style(center_text(subtitle1, banner_width), fg=light_wood))
-        click.echo(click.style(center_text(subtitle2, banner_width), fg=light_wood))
-        click.echo()
-
-        click.echo(click.style("Hunt commands in this package:"))
-        click.echo()
-        body = []
-        for cmd_name in sorted(self.commands.keys()):
-            color = COMMAND_COLORS.get(cmd_name, (240, 240, 240))
-            cmd_label = get_command_color(cmd_name, color)
-            cmd_help = self.commands[cmd_name].get_short_help_str(limit=80)
-            body.append(f"  - {cmd_label}: {cmd_help}")
-
-        click.echo("\n".join(body))
+        for cmd_info in sorted(app.registered_commands, key=lambda c: c.name or ""):
+            color     = COMMAND_COLORS.get(cmd_info.name or "", (240, 240, 240))
+            label     = get_command_color(cmd_info.name or "", color)
+            help_text = (cmd_info.callback.__doc__ or "").strip() if cmd_info.callback else ""
+            typer.echo(f"  - {label}: {help_text}")
 
 
-@DaianaGroup
-def cli() -> None:
-    """"""
-
-
-for register in [
-        register_compile_command,
-        register_save_command,
-        register_show_command,
-        register_update_command,
-        register_oracle_command,
-        register_hunt_command
+# Register all sub-commands
+for _register in [
+    register_compile_command,
+    register_save_command,
+    register_show_command,
+    register_update_command,
+    register_oracle_command,
+    register_hunt_command,
 ]:
-    register(cli)
+    _register(app)
 
 
 if __name__ == "__main__":
-    cli()
+    app()
