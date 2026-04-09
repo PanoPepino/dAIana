@@ -1,8 +1,6 @@
 # To check and test basic latex commands of the project
 
-from daiana.utils.for_latex import render_template
-from pathlib import Path
-import pytest
+from daiana.core.compiler import render_template
 
 
 def test_render_template_creates_file(tmp_path):

@@ -6,47 +6,160 @@ import tempfile
 
 from typing import Optional
 from pathlib import Path
-from daiana.utils.for_latex import render_template
-from daiana.utils.constants import MODE_CONFIG, COMMAND_COLORS
+
+from daiana.utils.for_latex import (
+    check_pdflatex,
+    detect_project_root,
+    build_texinputs,
+    read_log,
+    extract_errors,
+    get_mode_config,
+    _ask_for_missing
+)
+from daiana.utils.for_csv import rewrite_filename
+from daiana.utils.constants import COMMAND_COLORS
 
 
-def check_pdflatex() -> bool:
-    return shutil.which("pdflatex") is not None
+def _collect_compile_data(mode: str, seed_data: dict | None = None) -> dict:
+    """
+    This is the first important function that will ask for inputs in case missing fields when the oracler seeds information.
+
+    Args:
+        mode (str): cv or cl flags from hunt mode of daiana.
+        seed_data (dict | None, optional): If oracle mode has been invoked first, it will just ask entries not passed from oracle to compile
+
+    Returns:
+        dict: The complete dictionary to pass to latex.
+    """
+
+    seed_data = seed_data or {}
+
+    click.echo(click.style("In case of missing fields, please, fill these in: ", fg=COMMAND_COLORS["compile"]))
+    click.echo()
+
+    resolved = {}
+    resolved["career"] = _ask_for_missing("career", "1) Career", seed_data)
+    resolved["job_position"] = _ask_for_missing("job_position", "2) Job Position", seed_data)
+    resolved["company_name"] = _ask_for_missing("company_name", "3) Company Name", seed_data)
+    resolved["location"] = _ask_for_missing("location", "4) Job Location", seed_data, default="")
+    resolved["job_link"] = _ask_for_missing("job_link", "5) Job Link", seed_data, default="")
+
+    if mode == "cl":
+        resolved["your_background"] = _ask_for_missing(
+            "your_background",
+            "6) Your tailored background",
+            seed_data,
+        )
+        resolved["sentence_first_paragraph"] = _ask_for_missing(
+            "sentence_first_paragraph",
+            "7) The company's challenge(s)",
+            seed_data,
+        )
+        resolved["project_one"] = _ask_for_missing(
+            "project_one",
+            "8) First relevant project",
+            seed_data,
+        )
+        resolved["project_two"] = _ask_for_missing(
+            "project_two",
+            "9) Second relevant project",
+            seed_data,
+        )
+
+    if mode == "cv":
+        resolved["project_one"] = _ask_for_missing(
+            "project_one",
+            "6) First relevant project",
+            seed_data,
+        )
+        resolved["project_two"] = _ask_for_missing(
+            "project_two",
+            "7) Second relevant project",
+            seed_data,
+        )
+        resolved["project_three"] = _ask_for_missing(
+            "project_three",
+            "8) Last relevant project",
+            seed_data,
+        )
+
+    return resolved
 
 
-def detect_project_root(tex_file: Path) -> Path:
-    for candidate in [tex_file.parent, *tex_file.parent.parents]:
-        if (candidate / "cls").exists() or (candidate / "loader").exists():
-            return candidate
-    return tex_file.parent
+def build_replacements(mode: str, data: dict) -> dict:
+    """
+    This function will eat inputs from terminal (or the the dict spit out by :func:`_collect_compile_data`) and spit out the final dictionary with the right commands to substitute in latex files.
+
+    Args:
+        mode (str): Depending on the document to pass
+        data (dict): The information to be substituted in the latex file.
+
+    Returns:
+        dict: The information to be substituted in the latex file.
+    """
+
+    # config = get_mode_config(mode)
+
+    replacements = {
+        "career": data.get("career", ""),
+        "job_position": data.get("job_position", ""),
+        "company_name": data.get("company_name", ""),
+        "location": data.get("location", ""),
+        "job_link": data.get("job_link", ""),
+    }
+
+    if mode == "cl":
+        replacements.update(
+            {
+                "your_background": data.get("your_background", ""),
+                "sentence_first_paragraph": data.get("sentence_first_paragraph", ""),
+                "cp_latex": f"\\body{replacements['career']}" if replacements["career"] else "",
+                "project_one": f"\\{data.get("project_one", "")}",
+                "project_two": f"\\{data.get("project_two", "")}",
+            }
+        )
+
+    if mode == "cv":
+        replacements.update(
+            {
+                "project_one": f"\\{data.get("project_one", "")}",
+                "project_two": f"\\{data.get("project_two", "")}",
+                "project_three": f"\\{data.get("project_three", "")}",
+            }
+        )
+
+    return replacements
 
 
-def build_texinputs(tmp_root: Path) -> str:
-    paths = ["./"]
+def render_template(template_path: Path,
+                    replacements: dict[str, str],
+                    stem_replacement: str = None) -> Path:
+    """
+    This function will create a copy of the chosen template, with a prepared name to be easily identified after compiled.
 
-    cls_dir = tmp_root / 'cls'
-    if cls_dir.exists() and any(cls_dir.glob('*.cls')):
-        paths.append(f"{tmp_root / 'cls'}//")
+    Args:
+        template_path (Path): The template you wanna compile.
+        replacements (dict[str, str]): The dic of strings to replace in the template \\newcommands.
+        stem_replacement (str, optional): To be substituted in future. Basically, it changes the name of the copy template for easier identification when output
 
-    paths.append(f"{tmp_root / 'loader'}//")
+    Returns:
+        Path: The absolute(?) path where the copied and modified template is at. (temporal file)
+    """
 
-    prefix = ":".join(paths) + ":"
-    original = os.environ.get("TEXINPUTS", "")
-    return prefix + original
+    directory_obj, obj_to_copy = template_path.parent, template_path.stem
+    company_pos_ending = rewrite_filename(replacements['company_name'].lower())
+    if stem_replacement:
+        fake_template = f"{stem_replacement}_{company_pos_ending}"
+    else:
+        fake_template = f"{obj_to_copy}_{company_pos_ending}"
+    new_path = Path(f"{directory_obj}/{fake_template}.tex")
 
-
-def read_log(log_path: Path) -> str:
-    if log_path.exists():
-        return log_path.read_text(errors="replace")
-    return "(no log file found)"
-
-
-def extract_errors(log_text: str) -> str:
-    lines = log_text.splitlines()
-    relevant = [l for l in lines if any(
-        tag in l for tag in ["! ", "Error", "Warning", "LaTeX Error", "Undefined"]
-    )]
-    return "\n".join(relevant) if relevant else "(no errors found in log)"
+    shutil.copy2(template_path, new_path)
+    text = new_path.read_text(encoding="utf-8")
+    for placeholder, value in replacements.items():
+        text = text.replace(f"{placeholder}", value)
+    new_path.write_text(text, encoding="utf-8")
+    return new_path
 
 
 def compile_tex(
@@ -59,7 +172,7 @@ def compile_tex(
         silent: bool = True,
         passes: int = 2) -> Path:
     """
-    Compile a .tex file to PDF using pdflatex.
+    This function will compile the previous modified and copied .tex file to PDF using pdflatex.
 
     Raises:
         click.ClickException: if pdflatex is missing, the tex file is missing, or no PDF is produced.
@@ -151,36 +264,14 @@ def compile_tex(
     return pdf_path
 
 
-def get_mode_config(mode: str) -> dict:
-    if mode not in MODE_CONFIG:
-        raise ValueError("Use mode='cv' or mode='cl'")
-    return MODE_CONFIG[mode]
+def render_and_compile(mode: str,
+                       username: str,
+                       replacements: dict,
+                       verbose: bool = False):
+    """
+    This function will make use of the duplicated and the dictionary to pass and will compile the the desired.tex file and generate .PDF.
+    """
 
-
-def build_replacements(mode: str, data: dict) -> dict:
-    config = get_mode_config(mode)
-
-    replacements = {
-        "career": data.get("career", ""),
-        "job_position": data.get("job_position", ""),
-        "company_name": data.get("company_name", ""),
-        "location": data.get("location", ""),
-        "job_link": data.get("job_link", ""),
-    }
-
-    if mode == "cl":
-        replacements.update(
-            {
-                "your_background": data.get("your_background", ""),
-                "sentence_first_paragraph": data.get("sentence_first_paragraph", ""),
-                "cp_latex": f"\\body{replacements['career']}" if replacements["career"] else "",
-            }
-        )
-
-    return replacements
-
-
-def render_and_compile(mode: str, username: str, replacements: dict, verbose: bool = False):
     config = get_mode_config(mode)
 
     to_feed = render_template(
@@ -192,51 +283,6 @@ def render_and_compile(mode: str, username: str, replacements: dict, verbose: bo
     return config["template"], path
 
 
-def _resolve_mode(mode: str | None) -> str:
-    if mode not in {"cv", "cl"}:
-        raise click.ClickException("Use exactly one mode: --cv or --cl")
-    return mode
-
-
-def _ask_for_missing(field_name: str, label: str, data: dict, default: str = "") -> str:
-    value = data.get(field_name)
-    if value not in (None, ""):
-        return value
-    return click.prompt(
-        click.style(label, fg="white", bold=True),
-        default=default,
-        show_default=bool(default),
-    )
-
-
-def _collect_compile_data(mode: str, seed_data: dict | None = None) -> dict:
-    seed_data = seed_data or {}
-
-    click.echo(click.style("In case of missing fields, please, fill these in: ", fg=COMMAND_COLORS["compile"]))
-    click.echo()
-
-    resolved = {}
-    resolved["career"] = _ask_for_missing("career", "1) Career", seed_data)
-    resolved["job_position"] = _ask_for_missing("job_position", "2) Job Position", seed_data)
-    resolved["company_name"] = _ask_for_missing("company_name", "3) Company Name", seed_data)
-    resolved["location"] = _ask_for_missing("location", "4) Job Location", seed_data)
-    resolved["job_link"] = _ask_for_missing("job_link", "5) Job Link", seed_data, default="")
-
-    if mode == "cl":
-        resolved["your_background"] = _ask_for_missing(
-            "your_background",
-            "Your tailored background",
-            seed_data,
-        )
-        resolved["sentence_first_paragraph"] = _ask_for_missing(
-            "sentence_first_paragraph",
-            "The company's challenge(s)",
-            seed_data,
-        )
-
-    return resolved
-
-
 def compile_with_data(
     *,
     mode: str,
@@ -244,6 +290,9 @@ def compile_with_data(
     verbose: bool,
     seed_data: dict | None = None,
 ):
+    """
+    This function summarises all previous functions into one single pipeline.
+    """
     replacements = _collect_compile_data(mode, seed_data)
     replacements = build_replacements(mode, replacements)
     template, path = render_and_compile(

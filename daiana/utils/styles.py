@@ -1,4 +1,4 @@
-from daiana.utils.constants import STATUS_COLORS, ALLOW_STATUS, COMMAND_COLORS
+from daiana.utils.constants import STATUS_COLORS, COMMAND_COLORS
 from typing import Dict
 import click
 

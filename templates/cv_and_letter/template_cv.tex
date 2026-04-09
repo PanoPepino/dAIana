@@ -8,7 +8,7 @@
 
 % To compile through VS code. Basic input for document template and letter variations
 \input{loader/preamble.tex}
-\input{loader/variants.tex}  
+\input{loader/variants_cv.tex}  
 
 
 
@@ -31,8 +31,9 @@
 \social[github]{JohnDoe}
 %\photo[1pt][0pt]{}
 
-
-
+\newcommand{\projectone}{project_one}
+\newcommand{\projecttwo}{project_two}
+\newcommand{\projectthree}{project_three}
 
 \begin{document}
 
@@ -56,10 +57,9 @@
 
 \section{Projects}
 \begin{itemize}
-\item \textcolor{color3}{\textbf{Project 1}:}
-\begin{itemize}
-      \item My own project
-\end{itemize}
+\item \projectone
+\item \projecttwo
+\item \projectthree
 \end{itemize}
 
 \vspace{0.2cm}

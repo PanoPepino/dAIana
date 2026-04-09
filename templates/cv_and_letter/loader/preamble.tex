@@ -1,10 +1,15 @@
 % ============================================================================
-% MODERNCV PREAMBLE - Color Configuration
+% MODERNCV PREAMBLE - preamble_moderncv.tex
 % ============================================================================
+% This file contains all package imports and configurations for moderncv documents
+% Usage: Place after \documentclass and before \begin{document}
 
-
+% ============================================================================
+% MODERNCV THEME CONFIGURATION
+% ============================================================================
 \renewcommand{\labelitemi}{\textbullet}
 \renewcommand{\labelitemii}{\textbullet}
+
 
 
 % ============================================================================
@@ -87,19 +92,20 @@
 % ============================================================================
 % HYPERLINK CONFIGURATION
 % ============================================================================
-\PassOptionsToPackage{
-    colorlinks = true,             % Colored links instead of boxes
-    linkcolor = color1,            % Internal link color (adjust: color1 or blue_for_mint)
-    citecolor = color1,            % Citation link color
-    urlcolor = color1              % URL link color
-}{hyperref}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks = true,
+    linkcolor = color2,
+    citecolor = color2,
+    urlcolor  = color2,
+}
 
 % ============================================================================
 % DOCUMENT-SPECIFIC GEOMETRY
 % ============================================================================
 \geometry{
     paper=a4paper,
-    top=2cm,                     % Adjust per document type
+    top=1.3cm,                     % Adjust per document type
     bottom=2cm,
     left=2.5cm,
     right=2.5cm,

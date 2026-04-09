@@ -1,6 +1,7 @@
 import click
 
-from daiana.core.compiler import _resolve_mode, compile_with_data
+from daiana.core.compiler import compile_with_data
+from daiana.utils.for_latex import _resolve_mode
 from daiana.core.saver import save_job_in_csv
 from daiana.utils.styles import DaianaCommand, command_banner, COMMAND_COLORS
 

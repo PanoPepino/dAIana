@@ -2,40 +2,56 @@ import shutil
 import subprocess
 import sys
 import os
+import click
+
 from pathlib import Path
 
-from daiana.utils.for_csv import rewrite_filename
+from daiana.utils.constants import MODE_CONFIG
 
 
-def render_template(template_path: Path,
-                    replacements: dict[str, str],
-                    stem_replacement: str = None) -> Path:
-    """
-    This function will create a copy of the chosen template, with a prepared name to be easily identified after compiled.
+def check_pdflatex() -> bool:
+    return shutil.which("pdflatex") is not None
 
-    Args:
-        template_path (Path): The template you wanna compile.
-        replacements (dict[str, str]): The dic of strings to replace in the template \\newcommands.
-        stem_replacement (str, optional): To be substituted in future. Basically, it changes the name of the copy template for easier identification when output
 
-    Returns:
-        Path: The absolute(?) path where the copied and modified template is at. (temporal file)
-    """
+def detect_project_root(tex_file: Path) -> Path:
+    for candidate in [tex_file.parent, *tex_file.parent.parents]:
+        if (candidate / "cls").exists() or (candidate / "loader").exists():
+            return candidate
+    return tex_file.parent
 
-    directory_obj, obj_to_copy = template_path.parent, template_path.stem
-    company_pos_ending = rewrite_filename(replacements['company_name'].lower())
-    if stem_replacement:
-        fake_template = f"{stem_replacement}_{company_pos_ending}"
-    else:
-        fake_template = f"{obj_to_copy}_{company_pos_ending}"
-    new_path = Path(f"{directory_obj}/{fake_template}.tex")
 
-    shutil.copy2(template_path, new_path)
-    text = new_path.read_text(encoding="utf-8")
-    for placeholder, value in replacements.items():
-        text = text.replace(f"{placeholder}", value)
-    new_path.write_text(text, encoding="utf-8")
-    return new_path
+def build_texinputs(tmp_root: Path) -> str:
+    paths = ["./"]
+
+    cls_dir = tmp_root / 'cls'
+    if cls_dir.exists() and any(cls_dir.glob('*.cls')):
+        paths.append(f"{tmp_root / 'cls'}//")
+
+    paths.append(f"{tmp_root / 'loader'}//")
+
+    prefix = ":".join(paths) + ":"
+    original = os.environ.get("TEXINPUTS", "")
+    return prefix + original
+
+
+def read_log(log_path: Path) -> str:
+    if log_path.exists():
+        return log_path.read_text(errors="replace")
+    return "(no log file found)"
+
+
+def extract_errors(log_text: str) -> str:
+    lines = log_text.splitlines()
+    relevant = [l for l in lines if any(
+        tag in l for tag in ["! ", "Error", "Warning", "LaTeX Error", "Undefined"]
+    )]
+    return "\n".join(relevant) if relevant else "(no errors found in log)"
+
+
+def get_mode_config(mode: str) -> dict:
+    if mode not in MODE_CONFIG:
+        raise ValueError("Use mode='cv' or mode='cl'")
+    return MODE_CONFIG[mode]
 
 
 def open_pdf(pdf_path):
@@ -50,3 +66,20 @@ def open_pdf(pdf_path):
         os.startfile(str(pdf_path))
     else:  # Linux and others
         subprocess.run(["xdg-open", str(pdf_path)])
+
+
+def _ask_for_missing(field_name: str, label: str, data: dict, default: str = "") -> str:
+    value = data.get(field_name)
+    if value not in (None, ""):
+        return value
+    return click.prompt(
+        click.style(label, fg="white", bold=True),
+        default=default,
+        show_default=bool(default),
+    )
+
+
+def _resolve_mode(mode: str | None) -> str:
+    if mode not in {"cv", "cl"}:
+        raise click.ClickException("Use exactly one mode: --cv or --cl")
+    return mode

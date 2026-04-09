@@ -1,15 +1,16 @@
 import click
-import os
-import platform
-import subprocess
+
 
 from pathlib import Path
 from time import perf_counter
+
 from daiana.core.oracler import run_oracle_pipeline
 from daiana.core.compiler import compile_with_data
 from daiana.core.saver import save_job_in_csv
 from daiana.utils.for_oracle import edit_oracle_dict
 from daiana.utils.styles import DaianaCommand, command_banner, COMMAND_COLORS
+from daiana.utils.for_hunt import _validate_hunt_mode, open_with_default_app
+from daiana.commands.oracler_cli import _display_oracle_result
 
 
 def register_hunt_command(cli: click.Group) -> None:
@@ -43,7 +44,12 @@ def register_hunt_command(cli: click.Group) -> None:
         is_flag=True,
         help="Show LaTeX compilation details.",
     )
-    def hunt_job(url: str, csv_path: Path, cv: bool, cl: bool, username: str, verbose: bool) -> None:
+    def hunt_job(url: str,
+                 csv_path: Path,
+                 cv: bool,
+                 cl: bool,
+                 username: str,
+                 verbose: bool) -> None:
         start = perf_counter()
 
         command_banner(
@@ -56,7 +62,9 @@ def register_hunt_command(cli: click.Group) -> None:
         _validate_hunt_mode(cv, cl)
 
         extract = cv or cl
-        tailor_cl = cl
+        select_projects = cv or cl
+        select_background = cv or cl
+        tailor_sentence = cl
 
         path_cv = None
         path_cl = None
@@ -64,17 +72,17 @@ def register_hunt_command(cli: click.Group) -> None:
         try:
             if cv and cl:
                 click.secho(
-                    "Extracting job information and crafting tailored sentence(s) ...",
+                    "Extracting job information, crafting tailored sentence, choosing best background skills and relevant projects ...",
                     fg=COMMAND_COLORS["oracle"],
                 )
             elif cv:
                 click.secho(
-                    "Extracting information of your next trophy ...",
+                    "Extracting information of your next trophy and selecting most relevant projects ...",
                     fg=COMMAND_COLORS["oracle"],
                 )
             else:
                 click.secho(
-                    "Tailoring your requested sentence(s) ...",
+                    "Crafting tailored sentence, choosing best background skills and relevant projects ...",
                     fg=COMMAND_COLORS["oracle"],
                 )
 
@@ -83,7 +91,9 @@ def register_hunt_command(cli: click.Group) -> None:
             result = run_oracle_pipeline(
                 url=url,
                 extract=extract,
-                tailor_cl=tailor_cl,
+                tailor_sentence=tailor_sentence,
+                select_projects=select_projects,
+                select_background=select_background
             )
 
             if not isinstance(result, dict):
@@ -92,15 +102,27 @@ def register_hunt_command(cli: click.Group) -> None:
             if not result:
                 raise click.ClickException("Oracle returned an empty result.")
 
-            _print_result_block("Oracle result:", result, COMMAND_COLORS["oracle"])
+            _display_oracle_result(result)
 
-            if click.confirm(
-                click.style("Would you like to modify this information?", fg=COMMAND_COLORS["update"]),
+            # ── Optional edit (skipped for project selection — not user-editable) ─
+            NON_EDITABLE = ['reasons', 'challenge_area', 'business_domain',
+                            'reason_name_1', 'reason_name_2', 'reason_name_3']
+            editable = {k: v for k, v in result.items()
+                        if k not in NON_EDITABLE}
+
+            if editable and click.confirm(
+                click.style("Would you like to modify this information?", fg=COMMAND_COLORS["oracle"]),
                 default=False,
             ):
+                updated = edit_oracle_dict(editable)
+                result.update(updated)
+
                 click.echo()
-                result = edit_oracle_dict(result)
-                _print_result_block("The new fields are:", result, COMMAND_COLORS["update"])
+                click.secho("Updated fields:", fg=COMMAND_COLORS["update"])
+                click.echo()
+                for key, value in editable.items():
+                    click.echo(f"{key:17}: {value}")
+                click.echo()
 
             if cv:
                 click.echo()
@@ -163,35 +185,3 @@ def register_hunt_command(cli: click.Group) -> None:
             elapsed = perf_counter() - start
             click.secho(f" -- Finished in {elapsed:.2f}s --")
             click.echo()
-
-
-def _validate_hunt_mode(cv: bool, cl: bool) -> None:
-    if not cv and not cl:
-        raise click.ClickException("Use at least one flag: --cv and/or --cl")
-
-
-def _print_result_block(title: str, data: dict, color: str) -> None:
-    click.secho(title, fg=color)
-    click.echo()
-    for key, value in data.items():
-        click.echo(f"{key:17}: {value}")
-    click.echo()
-
-
-def open_with_default_app(path: Path) -> None:
-    path = Path(path).expanduser().resolve()
-
-    if not path.exists():
-        raise click.ClickException(f"Cannot open missing file: {path}")
-
-    system_name = platform.system()
-
-    try:
-        if system_name == "Windows":
-            os.startfile(path)  # type: ignore[attr-defined]
-        elif system_name == "Darwin":
-            subprocess.run(["open", str(path)], check=True)
-        else:
-            subprocess.run(["xdg-open", str(path)], check=True)
-    except Exception as exc:
-        raise click.ClickException(f"Could not open file with default viewer: {path}") from exc

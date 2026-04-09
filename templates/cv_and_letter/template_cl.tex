@@ -4,7 +4,7 @@
 
 % To compile through VS code. Basic input for document template and letter variations
 \input{loader/preamble.tex}
-\input{loader/variants.tex}  
+\input{loader/variants_cl.tex}  
 
 % Observe that the TEXINPUTS commands MUST be changed in setting.json (when shift + cmd + P) if the folder arrangement changes (i.e. this template or any other goes inside a folder in the same dir as cls/ or loader/)
 
@@ -24,6 +24,8 @@
 \newcommand{\companychallenge}{sentence_first_paragraph}
 \newcommand{\background}{your_background}
 \newcommand{\bodyvariant}{cp_latex}
+\newcommand{\projectone}{project_one}
+\newcommand{\projecttwo}{project_two}
 
 
 
@@ -49,7 +51,10 @@
 % 4) \companychallenge \You relate your background to the challenge of the company you are applying for!
 
 
-Hello! I am applying for the offered \rolename\ position at \companyname. I believe my background in \background\ can contribute the most to \companyname's challenges \companychallenge.
+I am excited to apply for the announced \rolename\ role at \companyname. [...] These indispensable skills, combined with my robust background in \background, should uniquely position me to deliver a profund impact at \companyname. With sincere enthusiasm, I aim to collaborate passionately on \companyname's challenges in \companychallenge.
+
+
+
 
 % Here you write more common shit.
 Lore Ipsum... 
@@ -58,7 +63,10 @@ Lore Ipsum...
 \bodyvariant
 
 % And then you add more paragraph(s) that are common to all the positions.
-More Lore Ipsum...
+More Lore Ipsum... 
+
+% Testing project sentences
+\projectone, and\projecttwo.
 
 % And you say good bye and drop your microphone. Because you rock, you are the boss and you deserve that fucking position! (L)
 \makeletterclosing

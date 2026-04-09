@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 # Mapping colors to commands
 COMMAND_COLORS = {
@@ -66,3 +67,45 @@ MODE_CONFIG = {
         ],
     },
 }
+
+
+# ── Oracle: validation ────────────────────────────────────────────────────────
+REQUIRED_JOB_FIELDS = ("job_position",
+                       "company_name",
+                       "career",
+                       "location",
+                       "job_link")
+VALID_CAREERS = {"data", "rd", "quant"}
+
+REQUIRED_SENTENCE_FIELDS = (
+    "company_name",
+    "career",
+    "challenge_area",
+    "business_domain",
+    "sentence_first_paragraph",
+)
+
+# ── Scraper: CSS selectors (ordered, most-specific first) ─────────────────────
+SCRAPE_SELECTORS = [
+    {"class": "jobDescriptionContent"},   # Workday
+    {"class": "description-text"},        # Workday alt
+    {"class": "description__text"},       # LinkedIn
+    {"id": "content"},                    # Greenhouse
+    {"class": "posting-content"},         # Lever
+    {"class": "job-description"},         # TeamTailor (SE/EU boards)
+    {"id": "jobDescriptionText"},         # Indeed
+    {"class": "job-body"},
+    {"class": "job_description"},
+    {"class": "vacancy-description"},
+    {"role": "main"},
+]
+
+# ── Scraper: noise filter ─────────────────────────────────────────────────────
+NOISE_PATTERNS = re.compile(
+    r"(cookie|gdpr|privacy policy|accept all|©|\bjavascript\b)",
+    re.IGNORECASE,
+)
+
+# ── Scraper: token cap ────────────────────────────────────────────────────────
+SCRAPE_CHAR_LIMIT = 10_000
+MIN_WORD_COUNT = 100

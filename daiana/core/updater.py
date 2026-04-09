@@ -1,4 +1,3 @@
-from daiana.utils.for_csv import history_format_display
 import csv
 from pathlib import Path
 from datetime import date

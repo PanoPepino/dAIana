@@ -1,4 +1,4 @@
-from daiana.utils.for_csv import rewrite_filename, check_dir_exist, get_current_status
+from daiana.utils.for_csv import rewrite_filename, get_current_status
 from daiana.utils.constants import ALLOW_STATUS, STATUS_COLORS, FIELDNAMES
 import json
 

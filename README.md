@@ -99,7 +99,7 @@ Allowed statuses are defined in `daiana/utils/constants.py`.
 
 Scrapes a job posting URL and sends the text to an LLM (Perplexity `sonar` / `sonar-pro`) to extract structured job information and, optionally, a tailored cover letter phrase.
 
-At least one of `--extract` or `--tailor_cl` must be passed. You can use both together.
+At least one of `--extract` or `--tailor_sentence` must be passed. You can use both together.
 
 **Flags:**
 
@@ -107,7 +107,7 @@ At least one of `--extract` or `--tailor_cl` must be passed. You can use both to
 |------|-------------|
 | `--url` / `-u` | URL of the job posting *(required)* |
 | `--extract` | Extract structured job info: position, company, location, career, and link |
-| `--tailor_cl` | Craft a tailored phrase for the first paragraph of your cover letter |
+| `--tailor_sentence` | Craft a tailored phrase for the first paragraph of your cover letter |
 
 **`--extract` output fields:**
 
@@ -119,7 +119,7 @@ At least one of `--extract` or `--tailor_cl` must be passed. You can use both to
 | `location` | City only (UTF-8, no postal codes) |
 | `job_link` | The URL you provided |
 
-**`--tailor-cl` output fields:**
+**`--tailor_sentence` output fields:**
 
 | Field | Description |
 |-------|-------------|
@@ -134,7 +134,7 @@ After the result is displayed, you are asked whether you want to edit any field 
 **Example:**
 
 ```bash
-daiana oracle -u "https://jobs.example.com/data-engineer" --extract --tailor-cl
+daiana oracle -u "https://jobs.example.com/data-engineer" --extract --tailor_sentence
 ```
 
 ---
