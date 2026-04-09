@@ -114,17 +114,17 @@ def build_replacements(mode: str, data: dict) -> dict:
                 "your_background": data.get("your_background", ""),
                 "sentence_first_paragraph": data.get("sentence_first_paragraph", ""),
                 "cp_latex": f"\\body{replacements['career']}" if replacements["career"] else "",
-                "project_one": f"\\{data.get("project_one", "")}",
-                "project_two": f"\\{data.get("project_two", "")}",
+                "project_one": f"\\{data.get('project_one', '')}",
+                "project_two": f"\\{data.get('project_two', '')}",
             }
         )
 
     if mode == "cv":
         replacements.update(
             {
-                "project_one": f"\\{data.get("project_one", "")}",
-                "project_two": f"\\{data.get("project_two", "")}",
-                "project_three": f"\\{data.get("project_three", "")}",
+                "project_one": f"\\{data.get('project_one', '')}",
+                "project_two": f"\\{data.get('project_two', '')}",
+                "project_three": f"\\{data.get('project_three', '')}",
             }
         )
 
