@@ -26,7 +26,7 @@ def compile(
     verbose: bool = typer.Option(False, "--verbose", help="Show LaTeX compilation information."),
 ) -> None:
     compile_color = COMMAND_COLORS["compile"]
-    save_color = COMMAND_COLORS["save"]
+    save_color = COMMAND_COLORS['save']
 
     console.print()
     ui.rule("dAIana compiler", color=compile_color)

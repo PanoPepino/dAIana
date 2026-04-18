@@ -20,13 +20,13 @@ ui = DaianaUI()
 def save(
     career: str = typer.Option(..., "--career", "-cp", help='Career path, e.g. "software".'),
 ) -> None:
-    save_color = COMMAND_COLORS["save"]
+    save_color = COMMAND_COLORS['save']
 
     console.print()
     ui.rule("dAIana saver", color=save_color)
     console.print()
 
-    ui.info(f"[italic] Save your latest preys[/italic]", color=COMMAND_COLORS["save"])
+    ui.info(f"[italic] Save your latest preys[/italic]", color=COMMAND_COLORS['save'])
     console.print()
 
     console.print(f"[{rgb(save_color)}]Fill in the fields below:[/{rgb(save_color)}]")

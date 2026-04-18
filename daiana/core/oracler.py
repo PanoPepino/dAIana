@@ -231,7 +231,7 @@ def run_oracle_pipeline(
 
 console = Console()
 
-ORACLE = COMMAND_COLORS["oracle"]
+ORACLE = COMMAND_COLORS['oracle']
 
 NON_EDITABLE = {
     "reasons",

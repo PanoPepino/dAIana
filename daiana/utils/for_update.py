@@ -17,8 +17,8 @@ from daiana.utils.ui import COMMAND_COLORS, STATUS_COLORS, rgb
 
 console = Console()
 
-UPDATE = COMMAND_COLORS["update"]
-SAVE = COMMAND_COLORS["save"]
+UPDATE = COMMAND_COLORS['update']
+SAVE = COMMAND_COLORS['save']
 
 EDITABLE_FIELDS = [field for field in FIELDNAMES if field != "history"]
 

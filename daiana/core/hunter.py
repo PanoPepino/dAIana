@@ -18,11 +18,11 @@ from daiana.core.oracler import _display_oracle_result, _panel
 
 console = Console()
 
-HUNT = COMMAND_COLORS["hunt"]
-ORACLE = COMMAND_COLORS["oracle"]
+HUNT = COMMAND_COLORS['hunt']
+ORACLE = COMMAND_COLORS['oracle']
 COMPILE = COMMAND_COLORS["compile"]
-SAVE = COMMAND_COLORS["save"]
-UPDATE = COMMAND_COLORS["update"]
+SAVE = COMMAND_COLORS['save']
+UPDATE = COMMAND_COLORS['update']
 
 NON_EDITABLE = {
     "reasons",

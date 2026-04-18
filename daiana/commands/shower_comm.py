@@ -22,10 +22,10 @@ def show(
     rows: int = typer.Option(20, "--rows", "-rj", min=1, help="Number of recent jobs to display."),
 ) -> None:
     console.print()
-    ui.rule("dAIana show", color=COMMAND_COLORS["show"])
+    ui.rule("dAIana show", color=COMMAND_COLORS['show'])
     console.print()
 
-    ui.info(f"[italic] Inspect previous hunting trophies[/italic]", color=COMMAND_COLORS["show"])
+    ui.info(f"[italic] Inspect previous hunting trophies[/italic]", color=COMMAND_COLORS['show'])
     console.print()
     try:
         rows_data, csv_path = get_last_jobs(career, rows)
@@ -43,8 +43,8 @@ def show(
     console.print()
     console.print(
         Text.assemble(
-            ("Showing ", rgb(COMMAND_COLORS["show"])),
-            (f"last {len(rows_data)} job(s) ", f"bold {rgb(COMMAND_COLORS["show"])}"),
+            ("Showing ", rgb(COMMAND_COLORS['show'])),
+            (f"last {len(rows_data)} job(s) ", f"bold {rgb(COMMAND_COLORS['show'])}"),
             ("from ", "white"),
             (str(csv_path), "white"),
         )

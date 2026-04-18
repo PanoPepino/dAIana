@@ -32,9 +32,9 @@ def hunt(
     verbose: bool = typer.Option(False, "--verbose", help="Show LaTeX compilation details."),
 ) -> None:
     console.print('')
-    ui.rule("dAIana hunt", color=COMMAND_COLORS["hunt"])
+    ui.rule("dAIana hunt", color=COMMAND_COLORS['hunt'])
     console.print('')
-    ui.info("[italic]Ask guidance. Choose weapons. Track. Hunt[/italic]", color=COMMAND_COLORS["hunt"])
+    ui.info("[italic]Ask guidance. Choose weapons. Track. Hunt[/italic]", color=COMMAND_COLORS['hunt'])
 
     run_hunt_flow(
         url=url,

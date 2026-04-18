@@ -23,9 +23,9 @@ def update(
     erase: bool = typer.Option(False, "--erase", "-e", help="Erase a stored row."),
 ) -> None:
     console.print("")
-    ui.rule("dAIana updater", color=COMMAND_COLORS["update"])
+    ui.rule("dAIana updater", color=COMMAND_COLORS['update'])
     console.print("")
-    ui.info("[italic]Update or erase a job application[/italic]", color=COMMAND_COLORS["update"])
+    ui.info("[italic]Update or erase a job application[/italic]", color=COMMAND_COLORS['update'])
 
     run_update_flow(
         career=career,
