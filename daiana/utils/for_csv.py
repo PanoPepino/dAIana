@@ -1,10 +1,8 @@
 import re
 from pathlib import Path
-import click
 import json
 
 from daiana.utils.constants import FIELDNAMES
-from daiana.utils.styles import *
 
 
 def rewrite_filename(name: str) -> str:
@@ -62,45 +60,6 @@ def get_current_status(history_json: str) -> str:
     except (json.JSONDecodeError, KeyError, ValueError):
         # Fallback for old string format
         return print("Seems your history is not a json object...")
-
-
-def history_format_display(history_json: str,
-                           latest_only: bool = True) -> str:
-    """
-    This function eats the history status for all the job positions and splits it in such a way that it only show the update dates in the given color of a status.
-
-    Args:
-        history (str): The entry of a job position that contains all the status update.
-
-    Returns:
-        str: The entry only with the dates colored in the associated status.
-    """
-
-    action, latest_update = get_current_status(history_json)
-
-    if not action:
-        return click.style('-', fg='red')
-
-    # Getting color
-
-    color_style = get_status_color(action)
-
-    if latest_only:
-        return click.style(latest_update, **color_style)
-
-    # Full history display with the right colors
-
-    try:
-        history = json.loads(history_json)
-        items = []
-        for key in sorted(history.keys()):
-            update_day = history[key]
-            items.append(click.style(update_day, **get_status_color(key)))
-
-        return click.style(" ".join(items), **color_style)
-
-    except:
-        pass
 
 
 def filter_job_dict(job: dict) -> dict:

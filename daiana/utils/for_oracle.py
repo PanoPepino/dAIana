@@ -1,4 +1,7 @@
-import click
+from __future__ import annotations
+from daiana.utils.ui import COMMAND_COLORS, rgb
+from rich.prompt import Prompt
+from rich.console import Console
 import requests
 import re
 import json
@@ -9,15 +12,15 @@ from openai import OpenAI
 from dotenv import load_dotenv
 
 from daiana.utils.constants import (
-    COMMAND_COLORS,
     NOISE_PATTERNS,
-)
-from daiana.utils.constants import (
-    REQUIRED_JOB_FIELDS, VALID_CAREERS,
+    REQUIRED_JOB_FIELDS,
+    VALID_CAREERS,
     REQUIRED_SENTENCE_FIELDS
 )
 
 from daiana.utils.prompts import BACKGROUND, PROJECT_NAME_TO_LATEX
+
+from daiana.utils.styles import COMMAND_COLORS
 
 
 def unicode_to_utf8(raw: str) -> str:
@@ -73,20 +76,30 @@ def _clean_text(text: str) -> str:
     return cleaned[:10_000]
 
 
+console = Console()
+
+
 def edit_oracle_dict(job: dict) -> dict:
     """Ask user to confirm or edit each field in the job dict."""
-    click.echo()
-    click.secho(
-        "Please review and edit each field (just press Enter to keep current value).\n",
-        fg=COMMAND_COLORS["update"],
+    console.print()
+    console.print(
+        f"[{rgb(COMMAND_COLORS['update'])}]Please review and edit each field "
+        f"(just press Enter to keep current value).[/ {rgb(COMMAND_COLORS['update'])}]"
     )
-    for key in job.keys():
-        current = job.get(key, "") or ""
-        new = click.prompt(f"  {key:14}", default=current, type=str)
-        if new.strip():
-            job[key] = new.strip()
-    return job
+    console.print()
 
+    for key in job.keys():
+        current = str(job.get(key, "") or "")
+        new_value = Prompt.ask(
+            f"[bold white]{key:14}[/bold white]",
+            default=current,
+            show_default=True,
+        ).strip()
+
+        if new_value:
+            job[key] = new_value
+
+    return job
 
 # ── JSON helpers ──────────────────────────────────────────────────────────────
 
@@ -124,7 +137,6 @@ def normalize_project_selection(selection: dict) -> dict:
     if not isinstance(selection, dict):
         raise ValueError("Project selection must be a dict")
 
-    # Safe extraction with empty string defaults
     normalized = {
         "project_one": selection.get("selected_1", ""),
         "project_two": selection.get("selected_2", ""),
@@ -134,16 +146,23 @@ def normalize_project_selection(selection: dict) -> dict:
         "reason_name_3": selection.get("reason_name_3", ""),
     }
 
-    # Validation: warn if reasons are missing
-    missing_reasons = [k for k, v in normalized.items()
-                       if k.startswith("reason_name_") and not v.strip()]
+    missing_reasons = [
+        key
+        for key, value in normalized.items()
+        if key.startswith("reason_name_") and not str(value).strip()
+    ]
+
     if missing_reasons:
-        click.secho(f"WARNING: Missing reasons for {len(missing_reasons)} projects", fg="yellow")
+        console.print()
+        console.print()
+        console.print(
+            f"[yellow]WARNING:[/yellow] Missing reasons for {len(missing_reasons)} projects"
+        )
 
     return normalized
 
-
 # ── Validators ────────────────────────────────────────────────────────────────
+
 
 def _validate_job_data(data: dict, url: str) -> dict:
     for field in REQUIRED_JOB_FIELDS:

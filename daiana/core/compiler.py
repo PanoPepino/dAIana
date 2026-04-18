@@ -1,41 +1,36 @@
-import click
-import subprocess
-import shutil
+from __future__ import annotations
+
 import os
+import shutil
+import subprocess
 import tempfile
-
-from typing import Optional
 from pathlib import Path
+from typing import Optional
 
+from rich.console import Console
+
+from daiana.utils.for_csv import rewrite_filename
 from daiana.utils.for_latex import (
+    _ask_for_missing,
+    build_texinputs,
     check_pdflatex,
     detect_project_root,
-    build_texinputs,
-    read_log,
     extract_errors,
     get_mode_config,
-    _ask_for_missing
+    read_log,
 )
-from daiana.utils.for_csv import rewrite_filename
-from daiana.utils.constants import COMMAND_COLORS
+from daiana.utils.ui import COMMAND_COLORS, rgb
+
+console = Console()
+
+COMPILE = COMMAND_COLORS["compile"]
 
 
 def _collect_compile_data(mode: str, seed_data: dict | None = None) -> dict:
-    """
-    This is the first important function that will ask for inputs in case missing fields when the oracler seeds information.
-
-    Args:
-        mode (str): cv or cl flags from hunt mode of daiana.
-        seed_data (dict | None, optional): If oracle mode has been invoked first, it will just ask entries not passed from oracle to compile
-
-    Returns:
-        dict: The complete dictionary to pass to latex.
-    """
-
     seed_data = seed_data or {}
 
-    click.echo(click.style("In case of missing fields, please, fill these in: ", fg=COMMAND_COLORS["compile"]))
-    click.echo()
+    console.print(f"[{rgb(COMPILE)}]In case of missing fields, please, fill these in:[/{rgb(COMPILE)}]")
+    console.print()
 
     resolved = {}
     resolved["career"] = _ask_for_missing("career", "1) Career", seed_data)
@@ -87,19 +82,6 @@ def _collect_compile_data(mode: str, seed_data: dict | None = None) -> dict:
 
 
 def build_replacements(mode: str, data: dict) -> dict:
-    """
-    This function will eat inputs from terminal (or the the dict spit out by :func:`_collect_compile_data`) and spit out the final dictionary with the right commands to substitute in latex files.
-
-    Args:
-        mode (str): Depending on the document to pass
-        data (dict): The information to be substituted in the latex file.
-
-    Returns:
-        dict: The information to be substituted in the latex file.
-    """
-
-    # config = get_mode_config(mode)
-
     replacements = {
         "career": data.get("career", ""),
         "job_position": data.get("job_position", ""),
@@ -131,27 +113,14 @@ def build_replacements(mode: str, data: dict) -> dict:
     return replacements
 
 
-def render_template(template_path: Path,
-                    replacements: dict[str, str],
-                    stem_replacement: str = None) -> Path:
-    """
-    This function will create a copy of the chosen template, with a prepared name to be easily identified after compiled.
-
-    Args:
-        template_path (Path): The template you wanna compile.
-        replacements (dict[str, str]): The dic of strings to replace in the template \\newcommands.
-        stem_replacement (str, optional): To be substituted in future. Basically, it changes the name of the copy template for easier identification when output
-
-    Returns:
-        Path: The absolute(?) path where the copied and modified template is at. (temporal file)
-    """
-
+def render_template(
+    template_path: Path,
+    replacements: dict[str, str],
+    stem_replacement: str = None,
+) -> Path:
     directory_obj, obj_to_copy = template_path.parent, template_path.stem
-    company_pos_ending = rewrite_filename(replacements['company_name'].lower())
-    if stem_replacement:
-        fake_template = f"{stem_replacement}_{company_pos_ending}"
-    else:
-        fake_template = f"{obj_to_copy}_{company_pos_ending}"
+    company_pos_ending = rewrite_filename(replacements["company_name"].lower())
+    fake_template = f"{stem_replacement}_{company_pos_ending}" if stem_replacement else f"{obj_to_copy}_{company_pos_ending}"
     new_path = Path(f"{directory_obj}/{fake_template}.tex")
 
     shutil.copy2(template_path, new_path)
@@ -163,35 +132,26 @@ def render_template(template_path: Path,
 
 
 def compile_tex(
-        tex_file: Path,
-        relative_output_dir: Optional[Path] = None,
-        clean: bool = True,
-        texinputs: Optional[str] = None,
-        project_root: Optional[Path] = None,
-        verbose: bool = False,
-        silent: bool = True,
-        passes: int = 2) -> Path:
-    """
-    This function will compile the previous modified and copied .tex file to PDF using pdflatex.
-
-    Raises:
-        click.ClickException: if pdflatex is missing, the tex file is missing, or no PDF is produced.
-
-    Returns:
-        Path: the path to the generated PDF.
-    """
-
+    tex_file: Path,
+    relative_output_dir: Optional[Path] = None,
+    clean: bool = True,
+    texinputs: Optional[str] = None,
+    project_root: Optional[Path] = None,
+    verbose: bool = False,
+    silent: bool = True,
+    passes: int = 2,
+) -> Path:
     if not check_pdflatex():
-        raise click.ClickException("pdflatex not found.")
+        raise RuntimeError("pdflatex not found.")
 
     tex_path = tex_file.absolute()
     if not tex_path.exists():
-        raise click.ClickException(f"TeX file not found: {tex_path}")
+        raise RuntimeError(f"TeX file not found: {tex_path}")
 
     stem = tex_path.stem
     root = Path(project_root).absolute() if project_root else detect_project_root(tex_path)
     if relative_output_dir is None:
-        relative_output_dir = 'output'
+        relative_output_dir = Path("output")
     pdf_path = root / relative_output_dir / f"{stem}.pdf"
 
     with tempfile.TemporaryDirectory(prefix="daiana-") as tmp_str:
@@ -212,12 +172,7 @@ def compile_tex(
         env = os.environ.copy()
         env["TEXINPUTS"] = texinputs if texinputs else build_texinputs(tmp_root)
 
-        cmd = [
-            "pdflatex",
-            "-interaction=batchmode",
-            "-halt-on-error",
-            str(tmp_tex)
-        ]
+        cmd = ["pdflatex", "-interaction=batchmode", "-halt-on-error", str(tmp_tex)]
 
         for i in range(passes):
             if silent:
@@ -226,28 +181,30 @@ def compile_tex(
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
                     cwd=tmp_tex_dir,
-                    env=env
+                    env=env,
                 )
             else:
                 result = subprocess.run(cmd, capture_output=False, cwd=tmp_tex_dir, env=env)
 
             if verbose:
                 log_text = read_log(log_path)
-                click.echo(f"\U0001f4cb Pass {i+1}/{passes}:", err=True)
-                click.echo(extract_errors(log_text)[-500:], err=True)
+                console.print(f"[bold {rgb(COMPILE)}]📋 Pass {i + 1}/{passes}:[/bold {rgb(COMPILE)}]")
+                console.print(extract_errors(log_text)[-500:])
             elif not silent and result.returncode != 0:
                 log_text = read_log(log_path)
-                click.secho(f"\u26a0 Pass {i+1}/{passes} failed", fg="red", err=True)
-                click.echo(extract_errors(log_text), err=True)
+                console.print(f"[bold red]⚠ Pass {i + 1}/{passes} failed[/bold red]")
+                console.print(extract_errors(log_text))
             elif not silent:
-                click.echo(f"\u2713 Pass {i+1}/{passes}")
+                console.print(f"[green]✓ Pass {i + 1}/{passes}[/green]")
 
         tmp_pdf = tmp_tex_dir / f"{stem}.pdf"
         if not tmp_pdf.exists():
             if verbose:
                 log_text = read_log(log_path)
-                click.echo(f"\n\u274c No PDF. Log:\n{log_text}")
-            raise click.ClickException("No PDF produced.")
+                console.print()
+                console.print(f"[bold red]❌ No PDF. Log:[/bold red]")
+                console.print(log_text)
+            raise RuntimeError("No PDF produced.")
 
         shutil.move(tmp_pdf, pdf_path)
 
@@ -260,18 +217,16 @@ def compile_tex(
                 tex_path.unlink()
 
     if not silent:
-        click.echo(f"\u2713 {pdf_path}")
+        console.print(f"[green]✓ {pdf_path}[/green]")
     return pdf_path
 
 
-def render_and_compile(mode: str,
-                       username: str,
-                       replacements: dict,
-                       verbose: bool = False):
-    """
-    This function will make use of the duplicated and the dictionary to pass and will compile the the desired.tex file and generate .PDF.
-    """
-
+def render_and_compile(
+    mode: str,
+    username: str,
+    replacements: dict,
+    verbose: bool = False,
+):
     config = get_mode_config(mode)
 
     to_feed = render_template(
@@ -290,9 +245,6 @@ def compile_with_data(
     verbose: bool,
     seed_data: dict | None = None,
 ):
-    """
-    This function summarises all previous functions into one single pipeline.
-    """
     replacements = _collect_compile_data(mode, seed_data)
     replacements = build_replacements(mode, replacements)
     template, path = render_and_compile(

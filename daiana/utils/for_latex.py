@@ -3,6 +3,7 @@ import subprocess
 import sys
 import os
 import click
+import typer
 
 from pathlib import Path
 
@@ -68,12 +69,16 @@ def open_pdf(pdf_path):
         subprocess.run(["xdg-open", str(pdf_path)])
 
 
-def _ask_for_missing(field_name: str, label: str, data: dict, default: str = "") -> str:
+def _ask_for_missing(field_name: str,
+                     label: str,
+                     data: dict,
+                     default: str = "") -> str:
     value = data.get(field_name)
     if value not in (None, ""):
         return value
-    return click.prompt(
-        click.style(label, fg="white", bold=True),
+
+    return typer.prompt(
+        label,
         default=default,
         show_default=bool(default),
     )
