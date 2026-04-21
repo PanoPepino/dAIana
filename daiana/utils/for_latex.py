@@ -55,20 +55,6 @@ def get_mode_config(mode: str) -> dict:
     return MODE_CONFIG[mode]
 
 
-def open_pdf(pdf_path):
-    """Open PDF in default system viewer."""
-    pdf_path = Path(pdf_path)
-    if not pdf_path.exists():
-        raise FileNotFoundError(f"PDF not found: {pdf_path}")
-
-    if sys.platform == "darwin":  # macOS
-        subprocess.run(["open", str(pdf_path)])
-    elif sys.platform == "win32":  # Windows
-        os.startfile(str(pdf_path))
-    else:  # Linux and others
-        subprocess.run(["xdg-open", str(pdf_path)])
-
-
 def _ask_for_missing(field_name: str,
                      label: str,
                      data: dict,

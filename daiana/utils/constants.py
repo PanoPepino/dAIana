@@ -1,5 +1,11 @@
-from pathlib import Path
+"""
+Allowed fields or statuses that can be modified.
+"""
+
+
 import re
+
+from pathlib import Path
 
 
 ALLOW_STATUS = [
@@ -20,6 +26,19 @@ FIELDNAMES = [
     'history',
     'job_link'
 ]
+
+# The bunch of fields not necessary to edit
+NON_EDITABLE = {
+    "reasons",
+    "challenge_area",
+    "business_domain",
+    "reason_name_1",
+    "reason_name_2",
+    "reason_name_3",
+}
+
+
+EDITABLE_FIELDS = [field for field in FIELDNAMES if field != "history"]
 
 
 MODE_CONFIG = {

@@ -1,15 +1,26 @@
 
-from typing import Dict
+
+from token import COMMA
+
 import click
 import json
+import typer
 
 from rich.text import Text
 from rich import box
 from rich.table import Table
+from rich.console import Console
+from typing import Dict
 
+from daiana.core.updater import edit_entry, update_history, write_rows
 from daiana.utils.for_csv import get_current_status
-from daiana.utils.constants import ALLOW_STATUS
-from daiana.utils.ui import STATUS_COLORS, COMMAND_COLORS
+from daiana.utils.constants import ALLOW_STATUS, EDITABLE_FIELDS
+from daiana.utils.colors import STATUS_COLORS, COMMAND_COLORS
+
+console = Console()
+
+UPDATE = COMMAND_COLORS['update']
+SAVE = COMMAND_COLORS['save']
 
 
 def get_status_color(action: str) -> Dict[str, any]:

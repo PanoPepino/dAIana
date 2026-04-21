@@ -1,9 +1,13 @@
+"""
+The most important file, as it gathers the full logic and aim of this package. It first calls the oracler, this extracts all required information for the job. Then, it will allow you to modify the information with updater. After that, it will send everything to the compiler and finally, will add the information about your application in the corresponding csv with saver.py!
+"""
+
 from __future__ import annotations
 
 import typer
+
 from pathlib import Path
 from time import perf_counter
-
 from rich.console import Console
 from rich.text import Text
 
@@ -12,8 +16,10 @@ from daiana.core.oracler import run_oracle_pipeline
 from daiana.core.saver import save_job_in_csv
 from daiana.utils.for_hunt import _validate_hunt_mode, open_with_default_app
 from daiana.utils.for_oracle import edit_oracle_dict
-from daiana.utils.ui import COMMAND_COLORS, rgb
-from daiana.core.oracler import _display_oracle_result, _panel
+from daiana.utils.ui import rgb, _panel
+from daiana.core.oracler import _display_oracle_result
+from daiana.utils.colors import COMMAND_COLORS
+from daiana.utils.constants import NON_EDITABLE
 
 
 console = Console()
@@ -23,15 +29,6 @@ ORACLE = COMMAND_COLORS['oracle']
 COMPILE = COMMAND_COLORS["compile"]
 SAVE = COMMAND_COLORS['save']
 UPDATE = COMMAND_COLORS['update']
-
-NON_EDITABLE = {
-    "reasons",
-    "challenge_area",
-    "business_domain",
-    "reason_name_1",
-    "reason_name_2",
-    "reason_name_3",
-}
 
 
 def run_hunt_flow(

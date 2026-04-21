@@ -27,23 +27,55 @@ JOB_PROMPT = (
 )
 
 # ── Challenge sentence ──────────────────────────────────────────────
+
+_COVER_RULE = (
+    "Cover letters convert when they mirror job ad vocabulary exactly. "
+    "Use ad's own phrasing verbatim where possible. Never embellish.\n"
+)
+
+_RESEARCH_RULE = (
+    "1. Company mission sets CONTEXT (scale/impact from About page)\n"
+    "2. Job responsibilities define DOMAIN (core technical deliverables)\n"
+    "3. Requirements specify TENSION (problems they need solved)\n"
+    "Use job ad first, supplement with company context only if ad lacks specifics.\n"
+)
+
+_STRUCTURE_RULE = (
+    "MANDATORY 3-part structure (20-25 words total):\n"
+    "• DOMAIN: 3-6 words. Core deliverable from job bullet #1 "
+    "(e.g. 'credit risk modeling methodologies', 'data pipeline engineering frameworks')\n"
+    "• TENSION: 4-8 words. Key problem/metric from requirements "
+    "(e.g. 'stress testing regulatory compliance requirements', 'real-time anomaly detection capabilities')\n"
+    "• CONTEXT: 5- words. Scale/stakeholders from company mission "
+    "(e.g. 'across Nordic SME lending portfolios', 'for healthcare IT operations globally')\n\n"
+    "Formula: '[DOMAIN] and [TENSION] [CONTEXT]'\n"
+    "Examples:\n"
+    "✅ 'credit risk modeling methodologies and stress testing regulatory compliance requirements across Nordic SME lending portfolios' (17 words)\n"
+    "✅ 'data pipeline engineering frameworks and real-time ML inference capabilities for healthcare IT operations globally' (15 words)\n"
+    "❌ 'innovative AI solutions that transform healthcare' (forbidden words + too short)\n"
+)
 SENTENCE_PROMPT = (
     _LANG_RULE
     + _JSON_RULE
-    + "\n"
-    "You are a cover letter strategist. Complete this exact fragment:\n\n"
-    "  '... position at [COMPANY], motivated by your work on ___'\n\n"
-    "Output ONLY the blank — what follows 'challenges in'.\n\n"
-    "Build the phrase in THREE parts from the job ad:\n"
-    "  [DOMAIN]   — the core technical field (e.g. 'credit risk modeling')\n"
-    "  [TENSION]  — the specific problem or goal (e.g. 'regulatory capital adequacy assessments')\n"
-    "  [CONTEXT]  — the scale or environment (e.g. 'across Nordic financial institutions')\n\n"
-    "Combine as: '[DOMAIN] and [TENSION] [CONTEXT]'\n"
-    "Target: 10-15 words. Noun phrase only, not a full sentence.\n"
-    "Use the ad's own vocabulary. No invented tools, metrics, or product names.\n"
-    "Forbidden: innovative, dynamic, cutting-edge, fast-paced, world-class, impactful.\n"
-    "If no concrete challenge found: set to \"\" and explain in 'challenge_area'.\n"
+    + _COVER_RULE
+    + _RESEARCH_RULE
+    + _STRUCTURE_RULE
+    + "\n\n"
+    "You are an elite cover letter strategist. Complete ONLY this fragment:\n\n"
+    "  '... position at [COMPANY], motivated by ___'\n\n"
+    "Output ONLY the blank as a precise 15-20 word noun phrase.\n\n"
+    "Required JSON format:\n"
+    """{
+      "motivation_phrase": "[DOMAIN] and [TENSION] [CONTEXT]",
+      "domain": "[core technical field]",
+      "tension": "[specific problem/goal]", 
+      "context": "[scale/environment]",
+      "challenge_area": "[why this phrasing fits | empty if perfect match]",
+      "word_count": 0,
+      "job_title_used": "[exact title from ad]"
+    }"""
 )
+
 
 # ── Project selector ─────────────────────────────────────────────────
 PROJECT_PROMPT = (

@@ -9,30 +9,10 @@ from rich.console import Console, Group
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
+from rich.columns import Columns
+from daiana.utils.colors import *
 
 
-COMMAND_COLORS: dict[str, tuple[int, int, int]] = {
-    "save": (0, 200, 120),
-    "update": (245, 200, 220),
-    "show": (200, 140, 100),
-    "hunt": (240, 60, 90),
-    "oracle": (230, 190, 60),
-    "compile": (30, 170, 240),
-}
-
-STATUS_COLORS: dict[str, tuple[int, int, int]] = {
-    "applied": (240, 240, 240),
-    "contacted": (250, 240, 180),
-    "int_1": (150, 200, 150),
-    "int_2": (70, 210, 190),
-    "offered": (0, 200, 120),
-    "rejected": (240, 60, 90),
-}
-
-NEUTRAL = (240, 240, 240)
-
-FOREST_TEAL = (0, 200, 120)
-LIGHT_WOOD = (200, 140, 100)
 console = Console()
 
 
@@ -170,3 +150,142 @@ class DaianaUI:
         )
         self.console.print(Align.center(commands_panel))
         self.console.print()
+
+
+def _field_table(items: list[tuple[str, str]]) -> Table:
+    """
+    General function to add columns to a table.
+    """
+    table = Table.grid(padding=(0, 1))
+    table.add_column(style="white", no_wrap=True)
+    table.add_column(style="white")
+
+    for label, value in items:
+        table.add_row(f"[bold white]{label}[/bold white]", value or "-")
+
+    return table
+
+
+def _panel(
+    title: str,
+    items: list[tuple[str, str]],
+    color: tuple[int, int, int],
+) -> Panel:
+    """
+    Function that calls :func: `_field_table` and creates a table inside a panel
+    """
+    return Panel(
+        _field_table(items),
+        title=f"[bold {color}]{title}[/bold {color}]",
+        title_align="left",
+        border_style=color,
+        padding=(1, 2),
+        expand=False,
+    )
+
+
+def _display_oracle_result(
+    result: dict,
+    extract: bool,
+    tailor_sentence: bool,
+    select_projects: bool,
+    select_background: bool,
+) -> None:
+    """
+    Function to display all information collected by oracle commands in the form of well structured panels.
+    """
+    if extract:
+        console.print(_panel(
+            "Extracted data",
+            [
+                ("job_position:", result.get("job_position", "")),
+                ("company_name:", result.get("company_name", "")),
+                ("career:", result.get("career", "")),
+                ("location:", result.get("location", "")),
+                ("job_link:", result.get("job_link", "")),
+            ], color=rgb(COMMAND_COLORS['oracle'])))
+        console.print()
+
+    if tailor_sentence or select_background:
+        console.print(_panel(
+            "Background skills and tailored sentence",
+            [
+                ("sentence_first_paragraph:", result.get("sentence_first_paragraph", "")),
+                ("your_background:", result.get("your_background", "")),
+            ], color=rgb(COMMAND_COLORS['oracle'])))
+        console.print()
+
+    if select_projects:
+        projects_panel = _panel(
+            "Selected projects",
+            [
+                ("project_one:", result.get("project_one", "")),
+                ("project_two:", result.get("project_two", "")),
+                ("project_three:", result.get("project_three", "")),
+            ],
+            color=rgb(COMMAND_COLORS['oracle']),
+        )
+
+        reasons_text = []
+        for i, proj_key in enumerate(["project_one", "project_two", "project_three"], 1):
+            proj_name = result.get(proj_key, "")
+            reason_key = f"reason_name_{i}"
+            reason = result.get(reason_key, "-")
+            reasons_text.append(f"{proj_name}: {reason}")
+
+        reasons_panel = _panel(
+            "Reasons for choosing those projects",
+            [("reasons:", "\n".join(reasons_text))],
+            color=rgb(COMMAND_COLORS['oracle']),
+        )
+
+        console.print(
+            Columns(
+                [projects_panel, reasons_panel],
+                equal=True,
+                expand=True,
+            )
+        )
+        console.print()
+
+    if tailor_sentence:
+        console.print(_panel(
+            "Extra material (not included in documents)",
+            [
+                ("challenge_area:", result.get("challenge_area", "")),
+                ("business_domain:", result.get("business_domain", "")),
+            ],
+            color=rgb(COMMAND_COLORS['oracle'])))
+        console.print()
+
+
+def _display_updated_fields(updated: dict) -> None:
+    """
+    Function to display in a simple panel any information modified with updater.
+    """
+    items = [(f"{key}:", str(value)) for key, value in updated.items()]
+    console.print()
+    console.print(_panel("Updated fields", items, color=rgb(COMMAND_COLORS['update'])))
+    console.print()
+
+
+def _show_active_modes(
+    extract: bool,
+    tailor_sentence: bool,
+    select_projects: bool,
+    select_background: bool,
+) -> list[str]:
+    active: list[str] = []
+
+    if extract:
+        active.append("extracting job metadata")
+    if tailor_sentence:
+        active.append("tailoring cover letter slots")
+    if select_projects:
+        active.append("selecting relevant projects")
+    if select_background:
+        active.append("selecting relevant background skills")
+
+    console.print()
+
+    return active

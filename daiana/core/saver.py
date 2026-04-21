@@ -1,7 +1,12 @@
-from pathlib import Path
-from datetime import date
+"""
+This file contains the simple logic to save information in a csv to track your applications.
+"""
+
 import csv
 import json
+
+from pathlib import Path
+from datetime import date
 
 from daiana.utils.for_csv import check_dir_exist, rewrite_filename
 

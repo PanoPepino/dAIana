@@ -1,12 +1,16 @@
+"""
+This file contains all the logic so that latexpdf can compile the document, no matter if you input the content or you let the hunter mode do it for you.
+"""
+
 from __future__ import annotations
 
 import os
 import shutil
 import subprocess
 import tempfile
+
 from pathlib import Path
 from typing import Optional
-
 from rich.console import Console
 
 from daiana.utils.for_csv import rewrite_filename

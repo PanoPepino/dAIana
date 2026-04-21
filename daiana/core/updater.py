@@ -1,7 +1,13 @@
+"""
+This file contains the logic to modify any required field in a simple dictionary. Mainly focused on updating fields saved in the csv of your applications.
+"""
+
 import csv
+import json
+
 from pathlib import Path
 from datetime import date
-import json
+
 
 from daiana.utils.for_csv import rewrite_filename, check_dir_exist
 from daiana.utils.constants import *
@@ -131,11 +137,3 @@ def select_matching_row(rows: list[dict], position: str, company: str) -> tuple[
         return matches[0]
 
     return matches
-
-
-def apply_status_update(rows: list[dict], row_index: int, new_status: str) -> None:
-    update_history(rows, row_index, new_status)
-
-
-def apply_field_update(rows: list[dict], row_index: int, field_name: str, new_value: str) -> None:
-    edit_entry(rows, row_index, field_name, new_value)

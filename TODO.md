@@ -1,7 +1,7 @@
 # Next wave of improvements
 
 
-- [ ] Move all Prompts to templates. 
+- [ ] Move all Prompts to templates and adequate the path.
     - WHY? Because in this way one can easily manipulate and change the prompts to tune to their needs.
 - [ ] Subsequently, this would imply to make those function go and read the prompts in that directory.
 
@@ -28,3 +28,5 @@
         6) Guide the user towards the templates/ directory and give commands on writing down to tailor the CV, cover letter and skills + project files as user wants, but following dAIana requirements.
         7) Some extra steps I cannot imagine yet.
 
+
+- [ ] Create a more robust readme.md 

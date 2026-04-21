@@ -1,6 +1,7 @@
 import re
-from pathlib import Path
 import json
+
+from pathlib import Path
 
 from daiana.utils.constants import FIELDNAMES
 

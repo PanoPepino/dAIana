@@ -1,6 +1,11 @@
+"""
+This file contains all helper logic for updating fields or information in your csv and/or latex fields.
+"""
+
 from __future__ import annotations
 
 import typer
+
 from rich.console import Console
 from rich.text import Text
 
@@ -11,16 +16,15 @@ from daiana.core.updater import (
     update_history,
     write_rows,
 )
-from daiana.utils.constants import ALLOW_STATUS, FIELDNAMES
+from daiana.utils.constants import ALLOW_STATUS, EDITABLE_FIELDS
 from daiana.utils.styles import history_format_rich
-from daiana.utils.ui import COMMAND_COLORS, STATUS_COLORS, rgb
+from daiana.utils.ui import rgb
+from daiana.utils.colors import COMMAND_COLORS, STATUS_COLORS
 
 console = Console()
 
 UPDATE = COMMAND_COLORS['update']
 SAVE = COMMAND_COLORS['save']
-
-EDITABLE_FIELDS = [field for field in FIELDNAMES if field != "history"]
 
 
 def run_update_flow(career: str, status: bool, field: bool, erase: bool) -> None:
