@@ -28,7 +28,7 @@ def show(
     ui.info(f"[italic] Inspect previous hunting trophies[/italic]", color=COMMAND_COLORS['show'])
     console.print()
     try:
-        rows_data, csv_path = get_last_jobs(career, rows)
+        rows_data, csv_path, total_rows = get_last_jobs(career, rows)
     except FileNotFoundError as exc:
         console.print(f"[bold red]{exc}[/bold red]")
         raise typer.Exit(code=1)
@@ -47,6 +47,13 @@ def show(
             (f"last {len(rows_data)} job(s) ", f"bold {rgb(COMMAND_COLORS['show'])}"),
             ("from ", "white"),
             (str(csv_path), "white"),
+        )
+    )
+    console.print('')
+    console.print(
+        Text.assemble(
+            ("Total # of applications: ", rgb(COMMAND_COLORS['show'])),
+            (f"{total_rows}"),
         )
     )
     console.print()

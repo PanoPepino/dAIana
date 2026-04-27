@@ -36,6 +36,7 @@ def oracle(
     ui.rule("dAIana oracle", color=COMMAND_COLORS['oracle'])
     console.print('')
     ui.info("[italic]Ask guidance to the Oracle[/italic]", color=COMMAND_COLORS['oracle'])
+
     run_oracle_flow(
         url=url,
         csv_path=csv_path,

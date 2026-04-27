@@ -1,0 +1,13 @@
+Available backgrounds:
+- distributed systems  
+- backend development  
+- API design  
+- cloud infrastructure  
+- microservices architecture  
+- data engineering  
+- system design  
+- DevOps practices  
+- performance optimization  
+- database systems  
+- software architecture  
+- full-stack development

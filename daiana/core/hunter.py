@@ -144,7 +144,7 @@ def _maybe_edit_oracle_result(result: dict) -> None:
     if not editable:
         return
 
-    console.print(f"Would you like to [{rgb(ORACLE)}]modify[/{rgb(ORACLE)}] this information?")
+    console.print(f"Would you like to [{rgb(UPDATE)}]modify[/{rgb(UPDATE)}] this information?")
     if not typer.confirm("Modify fields", default=False):
         return
 

@@ -14,7 +14,6 @@ from dotenv import load_dotenv
 from daiana.utils.constants import (
     NOISE_PATTERNS,
     REQUIRED_JOB_FIELDS,
-    VALID_CAREERS,
     REQUIRED_SENTENCE_FIELDS
 )
 
@@ -80,7 +79,6 @@ console = Console()
 
 
 def edit_oracle_dict(job: dict) -> dict:
-    """Ask user to confirm or edit each field in the job dict."""
     console.print()
     console.print(
         f"[{rgb(COMMAND_COLORS['update'])}]Please review and edit each field "
@@ -89,7 +87,9 @@ def edit_oracle_dict(job: dict) -> dict:
     console.print()
 
     for key in job.keys():
-        current = str(job.get(key, "") or "")
+        original = job.get(key, "")
+
+        current = str(original or "")
         new_value = Prompt.ask(
             f"[bold white]{key:14}[/bold white]",
             default=current,
@@ -98,6 +98,13 @@ def edit_oracle_dict(job: dict) -> dict:
 
         if new_value:
             job[key] = new_value
+
+    for key, value in job.items():
+        if not isinstance(value, str):
+            raise TypeError(
+                f"edit_oracle_dict produced non-string field: {key} -> "
+                f"{type(value).__name__}: {repr(value)}"
+            )
 
     return job
 
@@ -136,28 +143,28 @@ def parse_oracle_json(raw: str) -> dict:
 def normalize_project_selection(selection: dict) -> dict:
     if not isinstance(selection, dict):
         raise ValueError("Project selection must be a dict")
-
     normalized = {
         "project_one": selection.get("selected_1", ""),
         "project_two": selection.get("selected_2", ""),
         "project_three": selection.get("selected_3", ""),
-        "reason_name_1": selection.get("reason_name_1", ""),
-        "reason_name_2": selection.get("reason_name_2", ""),
-        "reason_name_3": selection.get("reason_name_3", ""),
+        "reason_selected_1": selection.get("reason_selected_1", ""),
+        "reason_selected_2": selection.get("reason_selected_2", ""),
+        "reason_selected_3": selection.get("reason_selected_3", ""),
     }
 
     missing_reasons = [
         key
         for key, value in normalized.items()
-        if key.startswith("reason_name_") and not str(value).strip()
+        if key.startswith("reason_selected_") and not str(value).strip()
     ]
 
     if missing_reasons:
         console.print()
-        console.print()
+
         console.print(
             f"[yellow]WARNING:[/yellow] Missing reasons for {len(missing_reasons)} projects"
         )
+        console.print()
 
     return normalized
 
@@ -170,8 +177,6 @@ def _validate_job_data(data: dict, url: str) -> dict:
             data[field] = ""
     if not data["job_link"]:
         data["job_link"] = url
-    if data["career"] not in VALID_CAREERS:
-        data["career"] = "rd"
     return data
 
 

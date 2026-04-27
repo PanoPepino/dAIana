@@ -65,7 +65,7 @@ def compile(
     console.print()
 
     should_save = typer.confirm(
-        f"Would you like to [{rgb(save_color)}]save[/{rgb(save_color)}] this job info in CSV?",
+        f"Would you like to save this job info in CSV?",
         default=False,
     )
 

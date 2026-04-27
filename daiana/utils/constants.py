@@ -32,9 +32,9 @@ NON_EDITABLE = {
     "reasons",
     "challenge_area",
     "business_domain",
-    "reason_name_1",
-    "reason_name_2",
-    "reason_name_3",
+    "reason_selected_1",
+    "reason_selected_2",
+    "reason_selected_3",
 }
 
 
@@ -75,7 +75,7 @@ REQUIRED_JOB_FIELDS = ("job_position",
                        "career",
                        "location",
                        "job_link")
-VALID_CAREERS = {"data", "rd", "quant"}
+
 
 REQUIRED_SENTENCE_FIELDS = (
     "company_name",
@@ -108,4 +108,4 @@ NOISE_PATTERNS = re.compile(
 
 # ── Scraper: token cap ────────────────────────────────────────────────────────
 SCRAPE_CHAR_LIMIT = 10_000
-MIN_WORD_COUNT = 100
+MIN_WORD_COUNT = 200

@@ -155,7 +155,7 @@ def compile_tex(
     stem = tex_path.stem
     root = Path(project_root).absolute() if project_root else detect_project_root(tex_path)
     if relative_output_dir is None:
-        relative_output_dir = Path("output")
+        relative_output_dir = Path("../pdf_output")
     pdf_path = root / relative_output_dir / f"{stem}.pdf"
 
     with tempfile.TemporaryDirectory(prefix="daiana-") as tmp_str:

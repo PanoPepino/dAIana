@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 include = ["daiana*"]
-exclude = ["tests*"]
+exclude = ["tests*", "job_hunt*"]
 namespaces = false
 
 [project]
@@ -16,7 +16,7 @@ requires-python = ">=3.10"
 authors = [
     { name = "PanoPepino", email = "panizofisico@gmail.com" }
 ]
-keywords = ["cli", "latex", "cv", "cover-letter", "job-hunting"]
+keywords = ["cli", "latex", "cv", "cover-letter", "job-hunting", "api-services", "AI"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: End Users/Desktop",

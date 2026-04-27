@@ -77,7 +77,7 @@ class DaianaUI:
     def banner(self, command: str) -> Align:
         color = COMMAND_COLORS[command]
         subtitle = Text(
-            "AI assistant for Job Hunting",
+            "Let dAIana enhance your job hunt.",
             style=f"italic {rgb(color)}",
             justify="center",
         )
@@ -99,7 +99,7 @@ class DaianaUI:
 
     def hero_help_panel(self) -> Align:
         hint = Text(
-            "Job hunting tool empowered with AI cv & cover letter tailoring skills",
+            "Ask the Oracle. Sharp your weapons. Track down. Hunt your dreamt jobs.",
             style=f"italic {rgb(FOREST_TEAL)}",
             justify="center",
         )
@@ -166,19 +166,17 @@ def _field_table(items: list[tuple[str, str]]) -> Table:
     return table
 
 
-def _panel(
-    title: str,
-    items: list[tuple[str, str]],
-    color: tuple[int, int, int],
-) -> Panel:
-    """
-    Function that calls :func: `_field_table` and creates a table inside a panel
-    """
+def _panel(title: str, items: list[tuple[str, str]], color) -> Panel:
+    if isinstance(color, tuple) and len(color) == 3:
+        color_style = f"rgb({color[0]},{color[1]},{color[2]})"
+    else:
+        color_style = str(color)
+
     return Panel(
         _field_table(items),
-        title=f"[bold {color}]{title}[/bold {color}]",
+        title=f"[bold {color_style}]{title}[/bold {color_style}]",
         title_align="left",
-        border_style=color,
+        border_style=color_style,
         padding=(1, 2),
         expand=False,
     )
@@ -229,13 +227,13 @@ def _display_oracle_result(
         reasons_text = []
         for i, proj_key in enumerate(["project_one", "project_two", "project_three"], 1):
             proj_name = result.get(proj_key, "")
-            reason_key = f"reason_name_{i}"
+            reason_key = f"reason_selected_{i}"
             reason = result.get(reason_key, "-")
             reasons_text.append(f"{proj_name}: {reason}")
 
         reasons_panel = _panel(
             "Reasons for choosing those projects",
-            [("reasons:", "\n".join(reasons_text))],
+            [("", "\n\n".join(reasons_text))],
             color=rgb(COMMAND_COLORS['oracle']),
         )
 

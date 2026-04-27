@@ -1,0 +1,99 @@
+\documentclass[11pt,a4paper,sans]{moderncv}
+
+\moderncvcolor{blue}
+\moderncvstyle{contemporary}
+
+
+
+
+% To compile through VS code. Basic input for document template and letter variations
+\input{loader/preamble.tex}
+\input{loader/variants_cv.tex}  
+
+
+
+% Observe that the TEXINPUTS commands MUST be changed in setting.json (when shift + cmd + P) if the folder arrangement changes (i.e. this template or any other goes inside a folder in the same dir as cls/ or loader/)
+
+\newcommand{\rolename}{asdf}   % To refer to your current job pos
+\newcommand{\skills}{Skill 1, Skill 2} % To be modified when modular.
+
+\newgeometry{top=0.5cm,
+             left=2cm,
+             right=2cm,
+             bottom=1.8cm}  % Slim top
+
+
+
+\name{John}{Doe} % Needs to be changed with some init
+\email{johndoe@gmail.com}
+\social[whatsapp]{+123456789}
+\social[linkedin]{johndoe}
+\social[github]{JohnDoe}
+%\photo[1pt][0pt]{}
+
+\newcommand{\projectone}{\cloudscale}
+\newcommand{\projecttwo}{\devtrack}
+\newcommand{\projectthree}{\datastream}
+
+\begin{document}
+
+\makecvtitle
+
+\vspace{-0.0cm}
+
+
+
+\section{Technical Skills \& Competencies}
+\begin{itemize}
+
+\item \textbf{Programming Languages:} Python, Java, TypeScript, C++, SQL
+
+\item \textbf{Backend Development:} RESTful APIs, GraphQL, Microservices Architecture, API Design
+
+\item \textbf{Frontend Development:} React, HTML5, CSS3, JavaScript (ES6+)
+
+\item \textbf{Cloud \& DevOps:} AWS (EC2, S3, Lambda), Docker, Kubernetes, CI/CD (GitHub Actions)
+
+\item \textbf{Databases:} PostgreSQL, MySQL, MongoDB, Redis
+
+\item \textbf{Tools \& Practices:} Git, Linux, Unit \& Integration Testing, Agile/Scrum, System Design, Code Review
+
+\item \textbf{Software Engineering:} Scalable System Design, Performance Optimization, Clean Code, Design Patterns
+
+\item \textbf{Languages:} English (C2), Japanese (N3)
+
+
+\section{Projects}
+\begin{itemize}
+\item \projectone
+\item \projecttwo
+\item \projectthree
+\end{itemize}
+
+\end{itemize}
+
+\vspace{0.2cm}
+
+
+
+\section{Work Experience}
+\cventry{2021--2026}{\textcolor{color3}{Senior Software Engineer}}{TechNova Inc.}{Tokyo, Japan}{}{
+\begin{itemize}
+\item Led development of scalable backend services supporting 500K+ users globally.
+\item Improved system performance by 35\% through optimization and architectural redesign.
+\item Mentored junior developers and introduced CI/CD pipelines reducing deployment time by 50\%.
+\end{itemize}
+}
+
+\cventry{2018--2021}{\textcolor{color3}{Software Engineer}}{CodeWorks Ltd.}{Remote}{}{
+\begin{itemize}
+\item Built RESTful APIs and frontend features for SaaS applications used by 50K+ users.
+\item Collaborated in Agile teams to deliver high-quality software on tight deadlines.
+\end{itemize}
+}
+
+\section{Education}
+\cventry{2018--2020}{\textcolor{color3}{M.Sc. in Computer Science}}{University of Edinburgh}{Edinburgh, UK}{}{}
+
+\cventry{2014--2018}{\textcolor{color3}{B.Sc. in Computer Science}}{University of Technology}{London, UK}{}{}
+\end{document}
