@@ -3,8 +3,9 @@ import typer
 from rich.console import Console
 from rich.text import Text
 from daiana.core.shower import get_last_jobs
-from daiana.utils.styles import jobs_table, status_legend
-from daiana.utils.ui import COMMAND_COLORS, DaianaUI, rgb
+from daiana.utils.design.styles import jobs_table, status_legend
+from daiana.utils.design.ui import DaianaUI, rgb
+from daiana.utils.design.colors import COMMAND_COLORS
 
 app = typer.Typer(
     help="Inspect previous applied jobs and their status.",

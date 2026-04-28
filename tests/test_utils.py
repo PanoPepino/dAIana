@@ -1,6 +1,6 @@
 from daiana.utils.for_csv import rewrite_filename, get_current_status
 from daiana.utils.constants import ALLOW_STATUS, FIELDNAMES
-from daiana.utils.ui import STATUS_COLORS
+from daiana.utils.design.ui import STATUS_COLORS
 import json
 
 # --- rewrite_filename ---

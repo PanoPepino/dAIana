@@ -10,6 +10,7 @@ COMMAND_COLORS: dict[str, tuple[int, int, int]] = {
     "hunt": (240, 60, 90),
     "oracle": (230, 190, 60),
     "compile": (30, 170, 240),
+    "init": (0, 200, 120)
 }
 
 STATUS_COLORS: dict[str, tuple[int, int, int]] = {

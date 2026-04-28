@@ -5,7 +5,8 @@ from pathlib import Path
 from rich.console import Console
 
 from daiana.core.hunter import run_hunt_flow
-from daiana.utils.ui import COMMAND_COLORS, DaianaUI
+from daiana.utils.design.ui import DaianaUI
+from daiana.utils.design.colors import COMMAND_COLORS
 
 app = typer.Typer(
     help="Ask guidance. Craft weapons. Track job preys. Hunt!",

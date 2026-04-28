@@ -109,3 +109,19 @@ NOISE_PATTERNS = re.compile(
 # ── Scraper: token cap ────────────────────────────────────────────────────────
 SCRAPE_CHAR_LIMIT = 10_000
 MIN_WORD_COUNT = 200
+
+
+# ── Supported models for API services ──────────────────────────────────────────
+
+
+SUPPORTED_MODELS = {
+    "perplexity": {
+        "sonar",
+        "sonar-pro",
+        "sonar-max"
+    },
+    "openai": {
+        "gpt-4o-mini",
+        "gpt-4o",
+    },
+}

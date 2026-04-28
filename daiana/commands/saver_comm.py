@@ -4,7 +4,8 @@ from rich.console import Console
 from rich.text import Text
 
 from daiana.core.saver import save_job_in_csv
-from daiana.utils.ui import COMMAND_COLORS, DaianaUI, rgb
+from daiana.utils.design.ui import DaianaUI, rgb
+from daiana.utils.design.colors import COMMAND_COLORS
 
 app = typer.Typer(
     help="A new job hunt trophy to add to the records? Add it!",
@@ -22,7 +23,6 @@ def save(
 ) -> None:
     save_color = COMMAND_COLORS['save']
 
-    console.print()
     ui.rule("dAIana saver", color=save_color)
     console.print()
 

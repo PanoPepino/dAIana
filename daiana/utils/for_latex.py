@@ -1,6 +1,4 @@
 import shutil
-import subprocess
-import sys
 import os
 import click
 import typer

@@ -20,6 +20,8 @@ build/
 venv/
 env/
 .env
+TODO.md
+.TODO.md
 
 # IDE
 .vscode/

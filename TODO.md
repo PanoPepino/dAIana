@@ -1,8 +1,12 @@
 # Next wave of improvements
 
 
-- [ ] Fix issue with updater (something about tuple) when oracle/hunt mode.
-- [ ] Make simple init that copies contents of templates folder wherever.
+- [X] Make simple init that copies contents of templates folder wherever.
+- [ ] Create a more robust readme.md
+- [ ] Create a check command, so that it checks the validity of the api, check it works with simple example and then it checks the prompts load correctly -> Then check a super simple example for john doe.
+- [ ] Rewrite the ui template for init, so that it properly displays things.
+- [ ] Rewrite ui template for check
+- [ ] Rewrite imports and similar ordering
 
 - [ ] Create a basic daiana `init` CLI command.
     - WHY: In this way, dAIana can guide the user to set things up. From basic info, to selecting career paths and so on.
@@ -29,4 +33,3 @@
 
 
 
-- [ ] Create a more robust readme.md 

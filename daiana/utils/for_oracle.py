@@ -1,5 +1,6 @@
 from __future__ import annotations
-from daiana.utils.ui import COMMAND_COLORS, rgb
+from pathlib import Path
+from daiana.utils.design.ui import COMMAND_COLORS, rgb
 from rich.prompt import Prompt
 from rich.console import Console
 import requests
@@ -10,6 +11,8 @@ import os
 from bs4 import BeautifulSoup
 from openai import OpenAI
 from dotenv import load_dotenv
+from daiana.utils.constants import SUPPORTED_MODELS
+import typer
 
 from daiana.utils.constants import (
     NOISE_PATTERNS,
@@ -19,7 +22,7 @@ from daiana.utils.constants import (
 
 from daiana.utils.prompts import BACKGROUND, PROJECT_NAME_TO_LATEX
 
-from daiana.utils.styles import COMMAND_COLORS
+from daiana.utils.design.styles import COMMAND_COLORS
 
 
 def unicode_to_utf8(raw: str) -> str:
@@ -250,9 +253,54 @@ def dict_values_to_sentence(d: dict, sep: str = ", ") -> str:
 
 # ── Client ────────────────────────────────────────────────────────────────────
 
-def build_perplexity_client() -> OpenAI:
-    load_dotenv()
-    api_key = os.getenv("PERPLEXITY_API_KEY")
+
+def _load_job_hunt_env() -> Path:
+    job_hunt_dir = os.getenv("DAIANA_JOB_HUNT_DIR")
+    if not job_hunt_dir:
+        raise ValueError("DAIANA_JOB_HUNT_DIR is not set")
+
+    job_hunt_path = Path(job_hunt_dir).expanduser().resolve()
+    env_path = job_hunt_path / ".env"
+
+    if not env_path.exists():
+        raise ValueError(f".env not found in {job_hunt_path}")
+
+    load_dotenv(dotenv_path=env_path, override=False)
+    return env_path
+
+
+def get_provider() -> str:
+    _load_job_hunt_env()
+    provider = os.getenv("DAIANA_PROVIDER", "perplexity").strip().lower()
+
+    if provider not in SUPPORTED_MODELS:
+        valid = ", ".join(sorted(SUPPORTED_MODELS))
+        raise typer.BadParameter(f"Unsupported provider '{provider}'. Supported providers: {valid}")
+
+    return provider
+
+
+def build_llm_client() -> OpenAI:
+    env_path = _load_job_hunt_env()
+
+    api_key_name = os.getenv("DAIANA_API_KEY_NAME", "USER_API_KEY")
+    api_key = os.getenv(api_key_name)
     if not api_key:
-        raise ValueError("PERPLEXITY_API_KEY not found in environment or .env")
-    return OpenAI(api_key=api_key, base_url="https://api.perplexity.ai")
+        raise typer.BadParameter(f"{api_key_name} not found in {env_path}")
+
+    provider = get_provider()
+    default_base_urls = {
+        "perplexity": "https://api.perplexity.ai",
+        "openai": "https://api.openai.com/v1",
+    }
+    base_url = os.getenv("DAIANA_BASE_URL", default_base_urls[provider])
+
+    return OpenAI(
+        api_key=api_key,
+        base_url=base_url,
+    )
+
+
+def get_default_model() -> str:
+    _load_job_hunt_env()
+    return os.getenv("DAIANA_MODEL", "sonar-pro")

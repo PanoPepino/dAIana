@@ -17,9 +17,9 @@ from daiana.core.updater import (
     write_rows,
 )
 from daiana.utils.constants import ALLOW_STATUS, EDITABLE_FIELDS
-from daiana.utils.styles import history_format_rich
-from daiana.utils.ui import rgb
-from daiana.utils.colors import COMMAND_COLORS, STATUS_COLORS
+from daiana.utils.design.styles import history_format_rich
+from daiana.utils.design.ui import rgb
+from daiana.utils.design.colors import COMMAND_COLORS, STATUS_COLORS
 
 console = Console()
 

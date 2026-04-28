@@ -2,8 +2,9 @@ import typer
 
 from rich.console import Console
 
-from daiana.utils.ui import COMMAND_COLORS, DaianaUI
+from daiana.utils.design.ui import DaianaUI
 from daiana.utils.for_update import run_update_flow
+from daiana.utils.design.colors import COMMAND_COLORS
 
 app = typer.Typer(
     help="Information to be updated for your latest prey? Update it!",

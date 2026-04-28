@@ -1,3 +1,5 @@
+import os
+
 from daiana.utils.prompt_loader import loader
 from daiana.utils.prompts import (
     JOB_PROMPT,
@@ -14,7 +16,8 @@ from daiana.utils.prompts import (
     JOB_SCHEMA,
 )
 
-SEP = "-" * 50
+
+SEP = "-" * 140
 
 
 def check(name, value):
@@ -31,12 +34,12 @@ def check(name, value):
         print(f"❌ {name}: unexpected type {type(value)}")
 
 
-print('')
+print("")
 print(SEP)
 print("DAIANA PROMPT LOADER — DIAGNOSTIC")
 print(SEP)
-print(f"Project root : {loader.project_root}")
-print(f"Prompts dir   : {loader.prompts_dir}")
+print(f"DAIANA_JOB_HUNT_DIR : {os.getenv('DAIANA_JOB_HUNT_DIR', '<not set>')}")
+print(f"Prompts dir         : {loader.prompts_dir}")
 print(SEP)
 
 check("JOB_PROMPT", JOB_PROMPT)
@@ -57,4 +60,4 @@ check("PROJECT_NAME_TO_LATEX", PROJECT_NAME_TO_LATEX)
 print(SEP)
 print("ALL PROMPTS LOADED SUCCESSFULLY")
 print(SEP)
-print('')
+print("")

@@ -16,9 +16,9 @@ from daiana.core.oracler import run_oracle_pipeline
 from daiana.core.saver import save_job_in_csv
 from daiana.utils.for_hunt import _validate_hunt_mode, open_with_default_app
 from daiana.utils.for_oracle import edit_oracle_dict
-from daiana.utils.ui import rgb, _panel
+from daiana.utils.design.ui import rgb, _panel
 from daiana.core.oracler import _display_oracle_result
-from daiana.utils.colors import COMMAND_COLORS
+from daiana.utils.design.colors import COMMAND_COLORS
 from daiana.utils.constants import NON_EDITABLE
 
 

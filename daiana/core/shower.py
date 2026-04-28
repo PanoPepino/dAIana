@@ -4,8 +4,6 @@ This file contains super simple information to display on terminal your n latest
 
 import csv
 
-from collections import deque
-
 from daiana.utils.for_csv import rewrite_filename, check_dir_exist
 
 

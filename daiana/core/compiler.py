@@ -23,7 +23,7 @@ from daiana.utils.for_latex import (
     get_mode_config,
     read_log,
 )
-from daiana.utils.ui import COMMAND_COLORS, rgb
+from daiana.utils.design.ui import COMMAND_COLORS, rgb
 
 console = Console()
 

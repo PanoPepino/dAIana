@@ -11,7 +11,7 @@ from typing import Dict
 from daiana.core.updater import edit_entry, update_history, write_rows
 from daiana.utils.for_csv import get_current_status
 from daiana.utils.constants import ALLOW_STATUS, EDITABLE_FIELDS
-from daiana.utils.colors import STATUS_COLORS, COMMAND_COLORS
+from daiana.utils.design.colors import STATUS_COLORS, COMMAND_COLORS
 
 console = Console()
 

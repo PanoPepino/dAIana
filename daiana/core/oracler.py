@@ -5,12 +5,16 @@ This file contains all the logic to use API requests to the given AI and to disp
 import json
 import typer
 
+import os
+
 from rich.console import Console
 from typing import Dict
 from openai import OpenAI
 
-from daiana.utils.colors import COMMAND_COLORS
-from daiana.utils.ui import (
+from daiana.utils.design.colors import COMMAND_COLORS
+from daiana.utils.for_init import _mask_secret, _load_job_hunt_env, get_default_model, get_provider
+from daiana.utils.constants import NON_EDITABLE
+from daiana.utils.design.ui import (
     rgb,
     _display_oracle_result,
     _display_updated_fields,
@@ -18,8 +22,10 @@ from daiana.utils.ui import (
 )
 
 from daiana.utils.for_oracle import (
+    build_llm_client,
     dict_values_to_sentence,
     edit_oracle_dict,
+    get_default_model,
     parse_oracle_json,
     unicode_to_utf8,
     scrape_job_text,
@@ -28,7 +34,6 @@ from daiana.utils.for_oracle import (
     _validate_project_data,
     _validate_sentence_data,
     _validate_background_data,
-    build_perplexity_client,
     normalize_project_selection,
 )
 
@@ -97,11 +102,11 @@ def build_background_user_content(job_text: str) -> str:
 
 # ── Pipeline functions ────────────────────────────────────────────────────────
 
-def extract_job_via_oracle(job_text: str, url: str, client: OpenAI) -> Dict[str, str]:
+def extract_job_via_oracle(job_text: str, url: str, client: OpenAI, model: str) -> Dict[str, str]:
     user_content = build_job_user_content(job_text)
 
     response = client.chat.completions.create(
-        model="sonar",
+        model=model,
         messages=[
             {"role": "system", "content": JOB_PROMPT},
             {"role": "user", "content": user_content},
@@ -118,11 +123,11 @@ def extract_job_via_oracle(job_text: str, url: str, client: OpenAI) -> Dict[str,
     return job_data
 
 
-def write_sentence_via_oracle(job_text: str, url: str, client: OpenAI) -> Dict[str, str]:
+def write_sentence_via_oracle(job_text: str, url: str, client: OpenAI, model: str) -> Dict[str, str]:
     user_content = build_sentence_user_content(job_text, url)
 
     response = client.chat.completions.create(
-        model="sonar-pro",
+        model=model,
         messages=[
             {"role": "system", "content": SENTENCE_PROMPT},
             {"role": "user", "content": user_content},
@@ -148,7 +153,7 @@ def write_sentence_via_oracle(job_text: str, url: str, client: OpenAI) -> Dict[s
         )
 
         repair_response = client.chat.completions.create(
-            model="sonar-pro",
+            model=model,
             messages=[
                 {"role": "system", "content": SENTENCE_PROMPT},
                 {"role": "user", "content": user_content},
@@ -182,7 +187,7 @@ def write_sentence_via_oracle(job_text: str, url: str, client: OpenAI) -> Dict[s
     ):
         quality_repair_prompt = (
             "Rewrite ONLY the field 'sentence_first_paragraph' and keep all other fields intact.\n"
-            "The phrase must be 18-28 words, human-written, and grounded in:\n"
+            "The phrase must be 10-20 words, human-written, and grounded in:\n"
             "1. the company's challenge,\n"
             "2. the work this job is meant to do,\n"
             "3. the company context.\n"
@@ -191,7 +196,7 @@ def write_sentence_via_oracle(job_text: str, url: str, client: OpenAI) -> Dict[s
         )
 
         quality_response = client.chat.completions.create(
-            model="sonar-pro",
+            model=model,
             messages=[
                 {"role": "system", "content": SENTENCE_PROMPT},
                 {"role": "user", "content": user_content},
@@ -209,11 +214,11 @@ def write_sentence_via_oracle(job_text: str, url: str, client: OpenAI) -> Dict[s
     return result
 
 
-def select_projects_via_oracle(job_text: str, client: OpenAI) -> dict:
+def select_projects_via_oracle(job_text: str, client: OpenAI, model: str) -> dict:
     user_content = build_project_user_content(job_text)
 
     response = client.chat.completions.create(
-        model="sonar-pro",
+        model=model,
         messages=[
             {"role": "system", "content": PROJECTS_PROMPT},
             {"role": "user", "content": user_content},
@@ -227,11 +232,11 @@ def select_projects_via_oracle(job_text: str, client: OpenAI) -> dict:
     return _validate_project_data(result)
 
 
-def select_background_via_oracle(job_text: str, client: OpenAI) -> dict:
+def select_background_via_oracle(job_text: str, client: OpenAI, model: str) -> dict:
     user_content = build_background_user_content(job_text)
 
     response = client.chat.completions.create(
-        model="sonar",
+        model=model,
         messages=[
             {"role": "system", "content": BACKGROUND_PROMPT},
             {"role": "user", "content": user_content},
@@ -255,6 +260,7 @@ def run_oracle_pipeline(
     select_projects: bool = False,
     select_background: bool = False,
     client: OpenAI | None = None,
+    model: str | None = None
 ) -> dict:
     """
     Run the oracle pipeline.
@@ -266,6 +272,7 @@ def run_oracle_pipeline(
         select_projects:    Select 3 most relevant projects for the CV.
         select_background:  Select 3 most relevant background skills for cover letter.
         client:             Optional pre-built API client (useful for tests).
+        model:              What the user needs, want to use
 
     Returns:
         dict: Merged results from all enabled pipeline stages.
@@ -277,26 +284,27 @@ def run_oracle_pipeline(
             "select_projects, select_background"
         )
 
-    client = client or build_perplexity_client()
+    client = client or build_llm_client()
+    model = model or get_default_model()
     job_text = scrape_job_text(url)
 
     result: dict = {}
 
     if extract:
-        job_data = extract_job_via_oracle(job_text, url, client)
+        job_data = extract_job_via_oracle(job_text, url, client, model)
         if not isinstance(job_data, dict):
             raise ValueError("extract_job_via_oracle() must return a dict")
         result.update(job_data)
 
     if tailor_sentence:
-        sentence_info = write_sentence_via_oracle(job_text, url, client)
+        sentence_info = write_sentence_via_oracle(job_text, url, client, model)
 
         if not isinstance(sentence_info, dict):
             raise ValueError("write_sentence_via_oracle() must return a dict")
         result.update({k: v for k, v in sentence_info.items() if k not in result})
 
     if select_projects:
-        project_info = select_projects_via_oracle(job_text, client)
+        project_info = select_projects_via_oracle(job_text, client, model)
         project_data = normalize_project_selection(project_info)
 
         if not isinstance(project_data, dict):
@@ -314,7 +322,7 @@ def run_oracle_pipeline(
         )
 
     if select_background:
-        background_dict = select_background_via_oracle(job_text, client)
+        background_dict = select_background_via_oracle(job_text, client, model)
         background_info = dict_values_to_sentence(background_dict, ", ")
         if not isinstance(background_info, str):
             raise ValueError("select_background_via_oracle() must return a str of backgrounds")
@@ -324,16 +332,6 @@ def run_oracle_pipeline(
 
 
 console = Console()
-
-
-NON_EDITABLE = {
-    "reasons",
-    "challenge_area",
-    "business_domain",
-    "reason_selected_1",
-    "reason_selected_2",
-    "reason_selected_3",
-}
 
 
 def run_oracle_flow(
@@ -408,3 +406,30 @@ def _validate_flags(
             "--select_projects, --select_background[/bold red]"
         )
         raise typer.Exit(code=1)
+
+
+# ── Test Oracle ─────────────────────────────────────────────────────────────
+
+
+def inspect_loaded_environment() -> dict:
+    env_path = _load_job_hunt_env()
+    provider = get_provider()
+    model = get_default_model()
+
+    api_key_name = os.getenv("DAIANA_API_KEY_NAME", "USER_API_KEY")
+    api_key_value = os.getenv(api_key_name, "")
+    base_url = os.getenv(
+        "DAIANA_BASE_URL",
+        "https://api.perplexity.ai" if provider == "perplexity" else "https://api.openai.com/v1",
+    )
+    job_hunt_dir = os.getenv("DAIANA_JOB_HUNT_DIR", "")
+
+    return {
+        "job_hunt_dir": job_hunt_dir,
+        "env_path": str(env_path),
+        "provider": provider,
+        "base_url": base_url,
+        "model": model,
+        "api_key_name": api_key_name,
+        "api_key_masked": _mask_secret(api_key_value),
+    }

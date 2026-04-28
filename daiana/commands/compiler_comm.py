@@ -6,7 +6,8 @@ from rich.text import Text
 from daiana.core.compiler import compile_with_data
 from daiana.core.saver import save_job_in_csv
 from daiana.utils.for_latex import _resolve_mode
-from daiana.utils.ui import COMMAND_COLORS, DaianaUI, rgb
+from daiana.utils.design.ui import DaianaUI, rgb
+from daiana.utils.design.colors import COMMAND_COLORS
 
 app = typer.Typer(
     help="Do you want to craft new weapons for your next hunt? Craft it!",

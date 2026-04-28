@@ -1,4 +1,4 @@
-# This file is used to check whether your prompts are correctly read by Oracle.
+"""This file is used to check whether your prompts are correctly read by Oracle."""
 
 import json
 from daiana.utils.prompt_loader import loader

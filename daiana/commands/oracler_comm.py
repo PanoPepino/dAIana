@@ -4,7 +4,8 @@ import typer
 
 from rich.console import Console
 from daiana.core.oracler import run_oracle_flow
-from daiana.utils.ui import COMMAND_COLORS, DaianaUI
+from daiana.utils.design.ui import DaianaUI
+from daiana.utils.design.colors import COMMAND_COLORS
 
 app = typer.Typer(
     help="Willing to get guidance from the AI oracle for next hunt? Ask it!",

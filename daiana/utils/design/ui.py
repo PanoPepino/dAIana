@@ -10,7 +10,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 from rich.columns import Columns
-from daiana.utils.colors import *
+from daiana.utils.design.colors import *
 
 
 console = Console()
