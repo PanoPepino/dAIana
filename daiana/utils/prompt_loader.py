@@ -1,9 +1,12 @@
-from pathlib import Path
+"""Compatibility shim — use daiana.infra.prompt_repository instead."""
+from daiana.infra.prompt_repository import PromptRepository, make_prompt_repository
 import os
+from pathlib import Path
 import click
 
 
 class PromptLoader:
+    """Kept for backwards compatibility. Prefer PromptRepository."""
     @property
     def job_hunt_dir(self) -> Path:
         env_dir = os.getenv("DAIANA_JOB_HUNT_DIR")
@@ -11,11 +14,9 @@ class PromptLoader:
             path = Path(env_dir).expanduser().resolve()
             if path.exists():
                 return path
-
         cwd = Path.cwd().resolve()
         if (cwd / "prompts").exists():
             return cwd
-
         raise click.ClickException(
             "Missing job_hunt directory. Provide --job-hunt-dir or set DAIANA_JOB_HUNT_DIR."
         )

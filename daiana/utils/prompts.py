@@ -1,51 +1,43 @@
-"""This file is used to check whether your prompts are correctly read by Oracle."""
+"""Compatibility shim — prompt loading now uses daiana.infra.prompt_repository.
 
-import json
-from daiana.utils.prompt_loader import loader
+No module-level file I/O happens here. All values are resolved on first access
+through make_prompt_repository(), which requires DAIANA_JOB_HUNT_DIR to be set.
+"""
+from __future__ import annotations
 
-
-# =============================================================================
-# LOADED FROM prompts/
-# =============================================================================
-
-_background_raw = loader.load("background/background_payload")
-_background_schema_raw = loader.load("background/background_schema")
-_sentence_schema_raw = loader.load("sentence/sentence_schema")
-_projects_schema_raw = loader.load("projects/projects_schema")
-_job_schema_raw = loader.load("job/job_schema")
-_project_name_latex_raw = loader.load("projects/projects_name_to_latex")
-
-JOB_PROMPT = loader.load("job/job_prompt")
-SENTENCE_PROMPT = loader.load("sentence/sentence_prompt")
-PROJECTS_PROMPT = loader.load("projects/projects_prompt")
-BACKGROUND_PROMPT = loader.load("background/background_prompt")
-
-PROJECTS_PAYLOAD = loader.load("projects/projects_payload")
-BACKGROUND_PAYLOAD = _background_raw
-
-CAREERS_CONFIG = json.loads(loader.load("career/careers"))
-CAREERS = CAREERS_CONFIG["options"]
-
-SENTENCE_SCHEMA = json.loads(_sentence_schema_raw)
-PROJECTS_SCHEMA = json.loads(_projects_schema_raw)
-BACKGROUND_SCHEMA = json.loads(_background_schema_raw)
-JOB_SCHEMA = json.loads(_job_schema_raw)
-JOB_SCHEMA["career"] = "|".join(CAREERS)
-
-PROJECT_NAME_TO_LATEX = json.loads(_project_name_latex_raw)
+from daiana.infra.prompt_repository import make_prompt_repository
 
 
-# =============================================================================
-# PARSE BACKGROUND LIST
-# =============================================================================
+class _Lazy:
+    """Proxy that defers to make_prompt_repository() on first attribute access."""
+    _repo = None
 
-def _parse_background_list(raw: str) -> list[str]:
-    """Extract bullet-point items from background payload markdown."""
-    return [
-        line.lstrip("- ").strip()
-        for line in raw.splitlines()
-        if line.strip().startswith("-")
-    ]
+    @classmethod
+    def _get(cls, key: str):
+        if cls._repo is None:
+            cls._repo = make_prompt_repository()
+        return _GETTERS[key](cls._repo)
 
 
-BACKGROUND = _parse_background_list(_background_raw)
+_GETTERS = {
+    "JOB_PROMPT": lambda r: r.text("job/job_prompt"),
+    "SENTENCE_PROMPT": lambda r: r.text("sentence/sentence_prompt"),
+    "PROJECTS_PROMPT": lambda r: r.text("projects/projects_prompt"),
+    "BACKGROUND_PROMPT": lambda r: r.text("background/background_prompt"),
+    "SENTENCE_SCHEMA": lambda r: r.as_json("sentence/sentence_schema"),
+    "PROJECTS_SCHEMA": lambda r: r.as_json("projects/projects_schema"),
+    "BACKGROUND_SCHEMA": lambda r: r.as_json("background/background_schema"),
+    "JOB_SCHEMA": lambda r: r.job_schema(),
+    "PROJECTS_PAYLOAD": lambda r: r.text("projects/projects_payload"),
+    "BACKGROUND_PAYLOAD": lambda r: r.text("background/background_payload"),
+    "PROJECT_NAME_TO_LATEX": lambda r: r.as_json("projects/projects_name_to_latex"),
+    "CAREERS_CONFIG": lambda r: r.as_json("career/careers"),
+    "CAREERS": lambda r: r.careers(),
+    "BACKGROUND": lambda r: r.background_list(),
+}
+
+
+def __getattr__(name: str):
+    if name in _GETTERS:
+        return _Lazy._get(name)
+    raise AttributeError(f"module 'daiana.utils.prompts' has no attribute {name!r}")
