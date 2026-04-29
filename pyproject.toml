@@ -44,12 +44,18 @@ dependencies = [
 
 
 [project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-mock>=3.12",
+    "responses>=0.25",
+]
 docs = [
     "sphinx>=7.0",
     "furo",
     "sphinx-design",
     "myst-parser",
 ]
+
 
 
 
