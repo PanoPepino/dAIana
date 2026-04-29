@@ -11,10 +11,8 @@ dAIana
    **which modular pieces of your templates** to activate for that role.
    No LaTeX setup → nothing to compile.
 
-.. admonition:: Why the name dAIana?
-   :class: tip
+Here a simple table of all the pages you will find in this documentation.
 
-   dAIana comes from Diana, the Roman goddess of the hunt. The name fits the tool’s purpose: hunt down job postings, target the right role, and generate tailored application material from the terminal. Track your prey. Hunt.
 
 .. grid:: 2
    :gutter: 2
@@ -41,11 +39,17 @@ dAIana
       so the output actually sounds like you.
 
    .. grid-item-card:: 🗂️ Architecture
-   :link: architecture
-   :link-type: doc
+      :link: architecture
+      :link-type: doc
 
-   How the codebase is layered — commands, core logic, services,
-   infra adapters, and utilities explained in one place.
+      How the codebase is layered — commands, core logic, services,
+      infra adapters, and utilities explained in one place.
+
+
+.. admonition:: Why the name dAIana?
+   :class: tip
+
+   dAIana comes from Diana, the Roman goddess of the hunt. The name fits the tool’s purpose: hunt down job postings, target the right role, and generate tailored application material from the terminal. Track your prey. Hunt.
 
 .. toctree::
    :hidden:
