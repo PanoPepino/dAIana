@@ -50,11 +50,7 @@ docs = [
     "sphinx-design",
     "myst-parser",
 ]
-docs = [
-    "sphinx>=7.0",
-    "furo",
-    "sphinx-design",
-]
+
 
 
 [project.scripts]
