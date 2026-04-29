@@ -156,7 +156,7 @@ def write_sentence(job_text: str, url: str, client: OpenAI, model: str, prompts:
                 {"role": "assistant", "content": raw},
                 {"role": "user", "content": repair},
             ],
-            temperature=0.1, stream=False,
+            temperature=0.3, stream=False,
         )
         result = validate_sentence_data(parse_oracle_json(resp2.choices[0].message.content.strip()))
     return result
@@ -234,7 +234,8 @@ def run_oracle_flow(
     select_background: bool,
 ) -> None:
     if not any([extract, tailor_sentence, select_projects, select_background]):
-        console.print("[bold red]Use at least one flag: --extract, --tailor_sentence, --select_projects, --select_background[/bold red]")
+        console.print(
+            "[bold red]Use at least one flag: --extract, --tailor_sentence, --select_projects, --select_background[/bold red]")
         raise typer.Exit(code=1)
 
     _show_active_modes(

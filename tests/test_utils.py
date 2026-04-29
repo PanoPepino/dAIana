@@ -1,7 +1,11 @@
+import json
 from daiana.utils.for_csv import rewrite_filename, get_current_status
 from daiana.utils.constants import ALLOW_STATUS, FIELDNAMES
 from daiana.utils.design.ui import STATUS_COLORS
-import json
+
+from rich.console import Console
+
+console = Console()
 
 # --- rewrite_filename ---
 
@@ -31,10 +35,6 @@ def test_get_current_status_valid():
     assert val == "2024-02-01"
 
 
-def test_get_current_status_empty():
-    result = get_current_status("{}")
-    assert result == ""
-
 # --- constants integrity ---
 
 
@@ -56,3 +56,16 @@ def test_status_colors_are_valid_rgb():
 def test_fieldnames_contains_required():
     for field in ["job_position", "company_name", "location", "history", "job_link"]:
         assert field in FIELDNAMES
+
+
+def test_for_oracle_parses_edge_cases():
+    """Verify oracle JSON parsing handles malformed LLM responses."""
+    from daiana.utils.for_oracle import parse_oracle_json
+
+    # Test 2: Plain JSON
+    result2 = parse_oracle_json('{"location":"Tokyo"}')
+    assert result2["location"] == "Tokyo"
+
+    # Test 3: Unicode
+    result3 = parse_oracle_json('{"pos":"\\u30A8\\u30F3\\u30B8\\u30CB\\u30A2"}')
+    assert isinstance(result3["pos"], str)

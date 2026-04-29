@@ -21,19 +21,6 @@ def get_default_model() -> str:
     return load_settings().model
 
 
-def inspect_loaded_environment() -> dict:
-    s = load_settings()
-    return {
-        "job_hunt_dir": str(s.job_hunt_dir),
-        "env_path": str(s.env_path),
-        "provider": s.provider,
-        "base_url": s.base_url,
-        "model": s.model,
-        "api_key_name": s.api_key_name,
-        "api_key_masked": _mask_secret(s.api_key_value),
-    }
-
-
 __all__ = [
     "_mask_secret",
     "_resolve_job_hunt_dir",
@@ -43,5 +30,4 @@ __all__ = [
     "build_llm_client",
     "inspect_loaded_environment",
     "get_local_job_hunt",
-    "ensure_env_file",
 ]

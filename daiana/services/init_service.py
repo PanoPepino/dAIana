@@ -1,4 +1,5 @@
 """Init / setup service — replaces core/initer.py."""
+from operator import ne
 from pathlib import Path
 import os
 import shutil
@@ -8,6 +9,9 @@ from dotenv import set_key as dotenv_set_key
 from rich.console import Console
 
 from daiana.utils.constants import SUPPORTED_MODELS
+from daiana.utils.design.colors import COMMAND_COLORS, NEUTRAL
+from daiana.utils.design.ui import rgb, _panel
+
 
 console = Console()
 
@@ -25,21 +29,53 @@ def ensure_env_file(env_path: Path) -> None:
 
 
 def copy_directory_func() -> None:
-    console.print("\n[bold magenta]✦ Copying project directory[/bold magenta]\n")
+    init_color = rgb(COMMAND_COLORS["init"])
+    neutral_color = rgb(NEUTRAL)
+
+    console.print(f"\n[bold {init_color}]Copying[/bold {init_color}] [white]project directory[/white]\n")
+
     source_dir = get_local_job_hunt()
+
+    console.print(
+        f"[bold {init_color}]Where should I copy the [job_hunt] directory?[/bold {init_color}]"
+    )
     destination = Path(
-        typer.prompt("Where should I copy the [job_hunt] folder?", default=str(Path.home()))
+        typer.prompt("", default=str(Path.home()))
     ).expanduser().resolve()
+
     destination.mkdir(parents=True, exist_ok=True)
     target_dir = destination / "job_hunt"
+
     if target_dir.exists():
-        if not typer.confirm(f"{target_dir} already exists. Overwrite?", default=False):
-            console.print("[yellow]Copy cancelled.[/yellow]")
+        console.print("")
+        console.print(
+            f"[{neutral_color}]{target_dir} already exists.[/{neutral_color}] "
+            f"[bold {init_color}]Overwrite[/bold {init_color}]?"
+        )
+        if not typer.confirm("", default=False):
+            console.print(f"[{neutral_color}]Copy cancelled.[/{neutral_color}]")
             raise typer.Exit()
         shutil.rmtree(target_dir)
+
     shutil.copytree(source_dir, target_dir)
-    console.print(f"[bold green]✓ Copied[/bold green] to [cyan]{target_dir}[/cyan]")
-    console.print(f"\n[yellow]Next:[/yellow]\n[bold cyan]cd {target_dir}[/bold cyan]\n[bold cyan]daiana init --set_env[/bold cyan]\n")
+    console.print("")
+    console.print(
+        _panel(
+            "Directory copied",
+            [
+                ("Source:", str(source_dir)),
+                ("Target:", str(target_dir)),
+            ],
+            color=COMMAND_COLORS["init"],
+        )
+    )
+    console.print()
+    console.print(
+        f"[{init_color}]Next steps:[/{init_color}]\n"
+        f"\n"
+        f"[bold cyan]cd {target_dir}[/bold cyan]\n"
+        f"[bold {init_color}]daiana init --set_env[/bold {init_color}]\n"
+    )
 
 
 def _get_provider_defaults(provider: str) -> dict[str, str]:
@@ -50,24 +86,80 @@ def _get_provider_defaults(provider: str) -> dict[str, str]:
     return defaults[provider]
 
 
+def _prompt_choice(question: str, choices: list[str], default: str) -> str:
+    init_color = rgb(COMMAND_COLORS["init"])
+    neutral_color = rgb(NEUTRAL)
+
+    while True:
+        console.print(
+            f"[bold {init_color}]{question}[/bold {init_color}] "
+            f"[{neutral_color}]({', '.join(choices)})[/{neutral_color}]",
+            end=" ",
+        )
+        answer = typer.prompt("", prompt_suffix="").strip()
+
+        if not answer:
+            answer = default
+
+        if answer in choices:
+            return answer
+
+        console.print(
+            f"[bold red]Invalid choice.[/bold red] "
+            f"[{neutral_color}]Please choose one of: {', '.join(choices)}[/{neutral_color}]"
+        )
+
+
 def set_env_func() -> None:
-    console.print("\n[bold magenta]✦ Setting environment[/bold magenta]\n")
+    init_color = rgb(COMMAND_COLORS["init"])
+    neutral_color = rgb(NEUTRAL)
+
+    console.print(f"\n[bold {init_color}]Setting environment[/bold {init_color}]\n")
+
     project_dir = Path.cwd().resolve()
     env_path = project_dir / ".env"
     ensure_env_file(env_path)
 
-    provider = typer.prompt("Which provider are you using?", default="perplexity").strip().lower()
-    if provider not in SUPPORTED_MODELS:
-        raise typer.BadParameter(f"Unsupported provider. Choose one of: {', '.join(sorted(SUPPORTED_MODELS))}")
+    provider_choices = sorted(SUPPORTED_MODELS.keys())
+    provider = _prompt_choice(
+        question="Which provider are you using?",
+        choices=provider_choices,
+        default="perplexity",
+    )
 
-    d = _get_provider_defaults(provider)
-    model = typer.prompt("Which model?", default=d["model"]).strip()
-    if model not in SUPPORTED_MODELS[provider]:
-        raise typer.BadParameter(f"Model not supported. Choose one of: {', '.join(sorted(SUPPORTED_MODELS[provider]))}")
+    provider_defaults = _get_provider_defaults(provider)
 
-    base_url = typer.prompt("Base URL?", default=d["base_url"]).strip()
-    api_key_name = typer.prompt("API key env var name?", default=d["api_key_name"]).strip()
-    api_key_value = typer.prompt(f"Paste value for {api_key_name}", hide_input=True, confirmation_prompt=True).strip()
+    model_choices = sorted(SUPPORTED_MODELS[provider])
+    model = _prompt_choice(
+        question="Which model do you want to use?",
+        choices=model_choices,
+        default=provider_defaults["model"],
+    )
+
+    base_url_choices = [provider_defaults["base_url"]]
+    base_url = _prompt_choice(
+        question="Which base URL should be used?",
+        choices=base_url_choices,
+        default=provider_defaults["base_url"],
+    )
+
+    api_key_name_choices = [provider_defaults["api_key_name"]]
+    api_key_name = _prompt_choice(
+        question="Which API key env var name should be used?",
+        choices=api_key_name_choices,
+        default=provider_defaults["api_key_name"],
+    )
+
+    console.print(
+        f"[bold {init_color}]Paste the value for {api_key_name}:[/bold {init_color}] ",
+        end=""
+    )
+    api_key_value = typer.prompt(
+        "",
+        prompt_suffix="",
+        hide_input=True,
+        confirmation_prompt=True,
+    ).strip()
 
     for k, v in [
         ("DAIANA_JOB_HUNT_DIR", str(project_dir)),
@@ -80,6 +172,19 @@ def set_env_func() -> None:
         dotenv_set_key(str(env_path), k, v)
         os.environ[k] = v
 
-    console.print(f"[bold green]✓ Saved[/bold green] to [cyan]{env_path}[/cyan]")
-    console.print(f"[bold green]✓ Provider:[/bold green] [cyan]{provider}[/cyan] / [bold green]Model:[/bold green] [cyan]{model}[/cyan]\n")
-    console.print("[yellow]Run daiana commands from inside this folder.[/yellow]\n")
+    console.print()
+    console.print(
+        _panel(
+            "Environment saved",
+            [
+                ("Project dir:", str(project_dir)),
+                ("Env file:", str(env_path)),
+                ("Provider:", provider),
+                ("Model:", model),
+                ("Base URL:", base_url),
+                ("API key env:", api_key_name),
+            ],
+            color=COMMAND_COLORS["init"],
+        )
+    )
+    console.print()

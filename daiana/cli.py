@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 import typer
 
-from daiana.commands import init_comm
+from daiana.commands import init_comm, check_comm
 from daiana.utils.design.ui import DaianaUI, HelpCommand
 
 
@@ -41,6 +41,7 @@ def root(
 
     commands = [
         HelpCommand(name="init", summary="Prepare your set up to start hunting jobs!", panel="init"),
+        HelpCommand(name="check", summary="Test if your set up is right before start hunting!", panel="init"),
         HelpCommand(name="show", summary="Do you want to see your latest hunt trophies? Show it!", panel="show"),
         HelpCommand(name="save", summary="A new job hunt trophy to add to the records? Add it!", panel="save"),
         HelpCommand(name="update", summary="Information to be updated for your latest prey? Update it!", panel="update"),
@@ -58,6 +59,12 @@ app.add_typer(
     init_comm.app,
     name="init",
     help="Prepare your set up to start hunting jobs!",
+)
+
+app.add_typer(
+    check_comm.app,
+    name="check",
+    help="Test if your set up is right before start hunting!",
 )
 
 

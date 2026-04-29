@@ -50,6 +50,30 @@ def test_main_help():
     assert "Usage" in output or "Commands" in output or "dAIana" in output
 
 
+def test_init_help():
+    """
+    Test that `daiana init --help` runs and prints the init help text.
+    """
+    result = _run_cli(["init", "--help"], check=False)
+    output = _output(result)
+
+    assert result.returncode == 0
+    assert "Prepare your set up to start hunting jobs!" in output
+    assert "Options" in output
+
+
+def test_check_help():
+    """
+    Test that `daiana check --help` runs and prints the check help text.
+    """
+    result = _run_cli(["check", "--help"], check=False)
+    output = _output(result)
+
+    assert result.returncode == 0
+    assert "Test if your set up is right before start hunting!" in output
+    assert "Options" in output
+
+
 def test_compile_help():
     """
     Test that `daiana compile --help` runs and prints the compile help text.

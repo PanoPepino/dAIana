@@ -2,10 +2,12 @@
 requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
+
 [tool.setuptools.packages.find]
 include = ["daiana*"]
-exclude = ["tests*", "job_hunt*"]
+exclude = ["tests*", "job_hunt*", "docs*"]
 namespaces = false
+
 
 [project]
 name = "daiana"
@@ -13,6 +15,7 @@ version = "1.0.0"
 description = "AI empowered tool for LaTeX CV/cover letter automation for job hunting"
 readme = "README.md"
 requires-python = ">=3.10"
+license = { text = "MIT" }
 authors = [
     { name = "PanoPepino", email = "panizofisico@gmail.com" }
 ]
@@ -20,11 +23,14 @@ keywords = ["cli", "latex", "cv", "cover-letter", "job-hunting", "api-services",
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12"
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Utilities",
 ]
+
 
 dependencies = [
     "typer>=0.12.0",
@@ -33,18 +39,26 @@ dependencies = [
     "beautifulsoup4>=4.12.0",
     "openai>=1.0.0",
     "python-dotenv>=1.0.0",
-    "pypdf>=3.0.0"
+    "pypdf>=3.0.0",
 ]
+
 
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0",
     "pytest-mock>=3.12",
-    "responses>=0.25"
+    "responses>=0.25",
 ]
+docs = [
+    "sphinx>=7.0",
+    "furo",
+    "sphinx-design",
+]
+
 
 [project.scripts]
 daiana = "daiana.cli:app"
+
 
 [project.urls]
 Homepage = "https://github.com/PanoPepino/Daiana"

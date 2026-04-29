@@ -1,26 +1,6 @@
 # Next wave of improvements
 
 
-- [X] Make simple init that copies contents of templates folder wherever.
-- [ ] Create a more robust readme.md
-- [ ] Create a check command, so that it checks the validity of the api, check it works with simple example and then it checks the prompts load correctly -> Then check a super simple example for john doe.
-- [ ] Rewrite the ui template for init, so that it properly displays things.
-- [ ] Rewrite ui template for check
-- [ ] Rewrite imports and similar ordering
-
-- [ ] Create a basic daiana `init` CLI command.
-    - WHY: In this way, dAIana can guide the user to set things up. From basic info, to selecting career paths and so on.
-    - HOW:
-        0) It should ask permission to copy/paste the templates/ directory at the location where dAIana is invoked.
-        1) First, dAIana asks the user name, family_name, phonenumber, email, linkedin and other socialnetwork information.
-        2) It goes then and substitute these fields in the basic information. (PERHAPS I should create a basic_info.tex where all this should be located?)
-        3) Ask for the API key to set the enviroment with the key (I guess that this key is common to the VENV?)
-        4) Ideally it should then do some initial scrapping of the user's LinkedIn profile to extract background and skills? + Recommend 3/4 career_paths.
-        5) It should then explain the user how dAIana works. 
-        6) Guide the user towards the templates/ directory and give commands on writing down to tailor the CV, cover letter and skills + project files as user wants, but following dAIana requirements.
-        7) Some extra steps I cannot imagine yet.
-
-
 - [ ] Add an extra function, i.e. `skill_selector_via_oracle` and related prompts. 
     - WHY? Similarly to `project_selector_via_oracle`, it will allow for further modularity and tuning of the CV and cover letter.
     - HOW:
