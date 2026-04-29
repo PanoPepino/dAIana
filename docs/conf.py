@@ -38,7 +38,10 @@ release = "1.0.0"
 
 extensions = [
     "myst_parser",              # Write content in Markdown instead of RST
+    "sphinx.ext.autodoc",
+    "sphinx_design",          # for the grid cards
 ]
+
 
 # Accept both .rst and .md source files
 source_suffix = {
