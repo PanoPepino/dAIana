@@ -62,7 +62,7 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 # -- HTML output --------------------------------------------------------------
 
 html_theme = "furo"
-html_title = "dAIana 🏹"
+html_title = "🏹 dAIana 🏹"
 html_short_title = "dAIana"
 
 # Optional: drop a logo at docs/source/_static/logo.svg

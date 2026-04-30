@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+import re
 import shutil
 from pathlib import Path
 
@@ -10,6 +11,47 @@ import typer
 
 from daiana.utils.constants import MODE_CONFIG
 
+
+# ── LaTeX text escaping ─────────────────────────────────────────────────────
+
+# Ordered so that backslash is handled first, preventing double-escaping.
+_LATEX_SPECIAL: list[tuple[str, str]] = [
+    ("\\", r"\textbackslash{}"),
+    ("&",  r"\&"),
+    ("%",  r"\%"),
+    ("$",  r"\$"),
+    ("#",  r"\#"),
+    ("_",  r"\_"),
+    ("{",  r"\{"),
+    ("}",  r"\}"),
+    ("~",  r"\textasciitilde{}"),
+    ("^",  r"\textasciicircum{}"),
+]
+
+
+def latex_escape(text: str) -> str:
+    """Escape all LaTeX special characters in a plain-text string.
+
+    Safe to call on category labels and any other text that must not
+    contain raw LaTeX control sequences.  Do NOT call on strings that
+    already contain intentional LaTeX markup (e.g. item lists with
+    \\textbf{...} — use escape_bare_ampersands() for those instead).
+    """
+    for char, replacement in _LATEX_SPECIAL:
+        text = text.replace(char, replacement)
+    return text
+
+
+def escape_bare_ampersands(text: str) -> str:
+    """Escape only unescaped & characters in a string that may already
+    contain other LaTeX markup (e.g. skill item lists).
+
+    Matches & not preceded by a backslash.
+    """
+    return re.sub(r"(?<!\\)&", r"\\&", text)
+
+
+# ── pdflatex helpers ─────────────────────────────────────────────────────────
 
 def check_pdflatex() -> bool:
     return shutil.which("pdflatex") is not None

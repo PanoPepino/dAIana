@@ -7,9 +7,10 @@
         <link rel="canonical" href="https://panopepino.github.io/dAIana/usage.html" />
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2024.08.06 -->
-        <title>Usage - dAIana 🏹</title>
+        <title>Usage - 🏹 dAIana 🏹</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d75fae25" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=354aac6f" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=302659d7" />
     
     
@@ -176,7 +177,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="index.html"><div class="brand">dAIana 🏹</div></a>
+      <a href="index.html"><div class="brand">🏹 dAIana 🏹</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -200,7 +201,7 @@
       <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
   
   
-  <span class="sidebar-brand-text">dAIana 🏹</span>
+  <span class="sidebar-brand-text">🏹 dAIana 🏹</span>
   
 </a><form class="sidebar-search-container" method="get" action="search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -451,8 +452,10 @@ daiana<span class="w"> </span>update<span class="w"> </span>-cp<span class="w"> 
 <p>Scrape a job posting URL and send the text to the AI for extraction and
 tailoring without compiling PDFs.</p>
 <p>At least one of <code class="docutils literal notranslate"><span class="pre">--extract</span></code>, <code class="docutils literal notranslate"><span class="pre">--tailor_sentence</span></code>, <code class="docutils literal notranslate"><span class="pre">--project_selector</span></code>,
-or <code class="docutils literal notranslate"><span class="pre">--background_selector</span></code> must be passed.</p>
+<code class="docutils literal notranslate"><span class="pre">--background_selector</span></code>, or <code class="docutils literal notranslate"><span class="pre">--select_skills</span></code> must be passed.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>daiana<span class="w"> </span>oracle<span class="w"> </span>--url<span class="w"> </span><span class="s2">&quot;https://jobs.example.com/role&quot;</span><span class="w"> </span>--extract<span class="w"> </span>--tailor_sentence
+daiana<span class="w"> </span>oracle<span class="w"> </span>--url<span class="w"> </span><span class="s2">&quot;https://jobs.example.com/role&quot;</span><span class="w"> </span>--extract<span class="w"> </span>--select_skills
+daiana<span class="w"> </span>oracle<span class="w"> </span>--url<span class="w"> </span><span class="s2">&quot;https://jobs.example.com/role&quot;</span><span class="w"> </span>--extract<span class="w"> </span>--select_skills<span class="w"> </span>--project_selector
 </pre></div>
 </div>
 <p><strong>Flags</strong></p>
@@ -483,8 +486,31 @@ or <code class="docutils literal notranslate"><span class="pre">--background_sel
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--background_selector</span></code></p></td>
 <td><p>Select the 3 most relevant background items for the cover letter.</p></td>
 </tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--select_skills</span></code></p></td>
+<td><p>Rank and select the most relevant skill categories and items from your
+skills inventory (<code class="docutils literal notranslate"><span class="pre">skills_payload.md</span></code>) for the given job posting.
+The result is displayed as a <strong>Selected Skills</strong> panel and passed
+automatically to <code class="docutils literal notranslate"><span class="pre">compile</span> <span class="pre">--cv</span></code> as the CV skills block.</p></td>
+</tr>
 </tbody>
 </table>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>How ``–select_skills`` works</strong></p>
+<ol class="arabic simple">
+<li><p>dAIana reads your <code class="docutils literal notranslate"><span class="pre">skills_payload.md</span></code> inventory.</p></li>
+<li><p>The LLM ranks your skill categories and picks the most relevant items
+per category for the target job.</p></li>
+<li><p>Up to 4 skill categories are returned, each with a tailored item list.</p></li>
+<li><p>The selection is shown in a colour-coded <strong>Selected Skills</strong> panel.</p></li>
+<li><p>You can edit individual categories and item lists interactively before
+they are forwarded to the compiler.</p></li>
+<li><p>The final <code class="docutils literal notranslate"><span class="pre">\\cvitem</span></code> LaTeX block is injected into your CV template
+automatically — no manual editing required.</p></li>
+</ol>
+<p>To customise which skills are available for selection, edit
+<code class="docutils literal notranslate"><span class="pre">prompts/skills/skills_payload.md</span></code> in your <code class="docutils literal notranslate"><span class="pre">job_hunt/</span></code> folder.</p>
 </div>
 <p>This command is useful when you want the AI output but do not want to
 compile a PDF yet.</p>
@@ -665,5 +691,6 @@ record the application.</p>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=5fa4622c"></script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
     </body>
 </html>

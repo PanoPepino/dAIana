@@ -49,6 +49,10 @@ class PromptRepository:
         schema["career"] = "|".join(self.careers())
         return schema
 
+    def skills_payload(self) -> str:
+        """Return raw skills inventory text from skills/skills_payload."""
+        return self.text("skills/skills_payload")
+
 
 def make_prompt_repository() -> PromptRepository:
     """Build a PromptRepository from the current runtime settings."""

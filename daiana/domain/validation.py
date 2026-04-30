@@ -46,3 +46,12 @@ def validate_background_data(data: dict, valid_backgrounds: set[str]) -> dict:
         "background_two": data["background_two"],
         "background_three": data["background_three"],
     }
+
+
+def validate_skills_data(data: dict) -> dict:
+    """Ensure all 4 category/items slots exist; coerce missing ones to empty strings."""
+    result: dict = {}
+    for i in range(1, 5):
+        result[f"selected_{i}_category"] = str(data.get(f"selected_{i}_category") or "").strip()
+        result[f"selected_{i}_items"] = str(data.get(f"selected_{i}_items") or "").strip()
+    return result

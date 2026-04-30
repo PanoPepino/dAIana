@@ -15,6 +15,15 @@ from daiana.utils.design.colors import *
 
 console = Console()
 
+# Keys that must never be printed as raw text.
+_SKILLS_LATEX_KEY = "selected_skills_latex"
+_SKILL_DISPLAY_SLOTS: frozenset[str] = frozenset(
+    key
+    for i in range(1, 5)
+    for key in (f"_skill_cat_{i}", f"_skill_items_{i}")
+)
+_HIDDEN_KEYS: frozenset[str] = _SKILL_DISPLAY_SLOTS | {_SKILLS_LATEX_KEY}
+
 
 def rgb(color: tuple[int, int, int]) -> str:
     r, g, b = color
@@ -182,16 +191,41 @@ def _panel(title: str, items: list[tuple[str, str]], color) -> Panel:
     )
 
 
+def _skills_panel(data: dict, color_style: str) -> Panel | None:
+    """Build a skills panel from _skill_cat_N / _skill_items_N keys in *data*.
+
+    Returns None when no skill slots are present so callers can guard easily.
+    """
+    rows: list[tuple[str, str]] = []
+    for i in range(1, 5):
+        cat = str(data.get(f"_skill_cat_{i}", "")).strip()
+        items = str(data.get(f"_skill_items_{i}", "")).strip()
+        if cat:
+            rows.append((f"{i}. {cat}:", items or "-"))
+
+    if not rows:
+        return None
+
+    return _panel(
+        "Selected skills (ranked by relevance)",
+        rows,
+        color=color_style,
+    )
+
+
 def _display_oracle_result(
     result: dict,
     extract: bool,
     tailor_sentence: bool,
     select_projects: bool,
     select_background: bool,
+    select_skills: bool = False,
 ) -> None:
     """
-    Function to display all information collected by oracle commands in the form of well structured panels.
+    Display all information collected by oracle commands as structured panels.
     """
+    oracle_color = rgb(COMMAND_COLORS["oracle"])
+
     if extract:
         console.print(_panel(
             "Extracted data",
@@ -201,7 +235,9 @@ def _display_oracle_result(
                 ("career:", result.get("career", "")),
                 ("location:", result.get("location", "")),
                 ("job_link:", result.get("job_link", "")),
-            ], color=rgb(COMMAND_COLORS['oracle'])))
+            ],
+            color=oracle_color,
+        ))
         console.print()
 
     if tailor_sentence or select_background:
@@ -210,7 +246,9 @@ def _display_oracle_result(
             [
                 ("sentence_first_paragraph:", result.get("sentence_first_paragraph", "")),
                 ("your_background:", result.get("your_background", "")),
-            ], color=rgb(COMMAND_COLORS['oracle'])))
+            ],
+            color=oracle_color,
+        ))
         console.print()
 
     if select_projects:
@@ -221,28 +259,23 @@ def _display_oracle_result(
                 ("project_two:", result.get("project_two", "")),
                 ("project_three:", result.get("project_three", "")),
             ],
-            color=rgb(COMMAND_COLORS['oracle']),
+            color=oracle_color,
         )
 
         reasons_text = []
         for i, proj_key in enumerate(["project_one", "project_two", "project_three"], 1):
             proj_name = result.get(proj_key, "")
-            reason_key = f"reason_selected_{i}"
-            reason = result.get(reason_key, "-")
+            reason = result.get(f"reason_selected_{i}", "-")
             reasons_text.append(f"{proj_name}: {reason}")
 
         reasons_panel = _panel(
             "Reasons for choosing those projects",
             [("", "\n\n".join(reasons_text))],
-            color=rgb(COMMAND_COLORS['oracle']),
+            color=oracle_color,
         )
 
         console.print(
-            Columns(
-                [projects_panel, reasons_panel],
-                equal=True,
-                expand=True,
-            )
+            Columns([projects_panel, reasons_panel], equal=True, expand=True)
         )
         console.print()
 
@@ -253,18 +286,44 @@ def _display_oracle_result(
                 ("challenge_area:", result.get("challenge_area", "")),
                 ("business_domain:", result.get("business_domain", "")),
             ],
-            color=rgb(COMMAND_COLORS['oracle'])))
+            color=oracle_color,
+        ))
         console.print()
+
+    if select_skills:
+        panel = _skills_panel(result, oracle_color)
+        if panel is not None:
+            console.print(panel)
+            console.print()
 
 
 def _display_updated_fields(updated: dict) -> None:
     """
-    Function to display in a simple panel any information modified with updater.
+    Display modified fields after the interactive updater.
+
+    Skill display slots (_skill_cat_N / _skill_items_N) and the raw LaTeX key
+    are suppressed from the flat list and rendered as a panel instead.
     """
-    items = [(f"{key}:", str(value)) for key, value in updated.items()]
-    console.print()
-    console.print(_panel("Updated fields", items, color=rgb(COMMAND_COLORS['update'])))
-    console.print()
+    update_color = rgb(COMMAND_COLORS["update"])
+
+    plain_items = [
+        (f"{key}:", str(value))
+        for key, value in updated.items()
+        if key not in _HIDDEN_KEYS
+    ]
+
+    has_skill_updates = bool(_SKILL_DISPLAY_SLOTS & set(updated))
+
+    if plain_items:
+        console.print()
+        console.print(_panel("Updated fields", plain_items, color=update_color))
+        console.print()
+
+    if has_skill_updates:
+        panel = _skills_panel(updated, update_color)
+        if panel is not None:
+            console.print(panel)
+            console.print()
 
 
 def _show_active_modes(
@@ -272,6 +331,7 @@ def _show_active_modes(
     tailor_sentence: bool,
     select_projects: bool,
     select_background: bool,
+    select_skills: bool = False,
 ) -> list[str]:
     active: list[str] = []
 
@@ -283,6 +343,8 @@ def _show_active_modes(
         active.append("selecting relevant projects")
     if select_background:
         active.append("selecting relevant background skills")
+    if select_skills:
+        active.append("selecting and ranking relevant skills")
 
     console.print()
 

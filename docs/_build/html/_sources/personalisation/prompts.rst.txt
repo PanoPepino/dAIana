@@ -23,6 +23,49 @@ and to a ``\body<label>`` command in ``variants_cl.tex``.
    Adding a label here without adding ``\body<label>`` in ``variants_cl.tex``
    will cause a LaTeX compile error on cover letter jobs with that career.
 
+
+
+Skills inventory (AI payload)
+-------------
+
+- **Location**: ``job_hunt/prompts/skills/skills_payload.md``
+
+This file defines the technical "DNA" the LLM scans when selecting skills for your CV. It is structured into categories that map directly to the \cvitem structure in your LaTeX templates.
+
+Format: JSON-like structure where each category defines label, max_items, and a list of items with associated keywords for semantic matching.
+
+.. code-block:: text
+
+    Backend & Architecture: Python (FastAPI, Django, Flask), 
+    Distributed Systems (gRPC, RabbitMQ, Kafka), Cloud Native (AWS Lambda, Docker, Kubernetes), 
+    Microservices design, System Scalability, Event-driven architecture.
+
+    Data Engineering & ML: SQL (PostgreSQL, Redshift), 
+    NoSQL (Redis, MongoDB), Big Data (Apache Spark, Airflow), ETL pipeline design, 
+    MLOps (MLflow, Kubeflow), Model deployment, Feature stores.
+
+    DevOps & Infrastructure: Infrastructure as Code (Terraform, Pulumi), 
+    CI/CD (GitHub Actions, GitLab CI), Monitoring & Observability 
+    (Prometheus, Grafana, ELK Stack), 
+    Linux Kernel tuning, Network security, Git workflow optimization.
+
+    Languages & Tools: Python, Rust, Go, TypeScript, C++, 
+    Bash, SQL, LaTeX, VS Code, IntelliJ, Jira, Agile/Scrum.
+
+How it works during Oracle:
+
+The LLM parses this payload and compares your items' keywords against the job description text.
+
+It ranks categories based on the total relevance weight of the matches found.
+
+If an exact match is missing, the LLM uses the keywords and the category context to fill slots with the most adjacent available skills.
+
+The final selection is injected as a pre-formatted LaTeX block (see selected_skills_latex).
+
+.. tip::
+
+Keep category labels consistent with your template’s \cvitem headers. If you change a label here, ensure the LaTeX template is updated to match, otherwise compilation will succeed but the formatting may misalign.
+
 Projects (AI payload)
 ---------------------
 

@@ -173,11 +173,13 @@ Scrape a job posting URL and send the text to the AI for extraction and
 tailoring without compiling PDFs.
 
 At least one of ``--extract``, ``--tailor_sentence``, ``--project_selector``,
-or ``--background_selector`` must be passed.
+``--background_selector``, or ``--select_skills`` must be passed.
 
 .. code-block:: bash
 
    daiana oracle --url "https://jobs.example.com/role" --extract --tailor_sentence
+   daiana oracle --url "https://jobs.example.com/role" --extract --select_skills
+   daiana oracle --url "https://jobs.example.com/role" --extract --select_skills --project_selector
 
 **Flags**
 
@@ -197,6 +199,28 @@ or ``--background_selector`` must be passed.
      - Pick the best matching projects from your project list.
    * - ``--background_selector``
      - Select the 3 most relevant background items for the cover letter.
+   * - ``--select_skills``
+     - Rank and select the most relevant skill categories and items from your
+       skills inventory (``skills_payload.md``) for the given job posting.
+       The result is displayed as a **Selected Skills** panel and passed
+       automatically to ``compile --cv`` as the CV skills block.
+
+.. note::
+
+   **How ``--select_skills`` works**
+
+   1. dAIana reads your ``skills_payload.md`` inventory.
+   2. The LLM ranks your skill categories and picks the most relevant items
+      per category for the target job.
+   3. Up to 4 skill categories are returned, each with a tailored item list.
+   4. The selection is shown in a colour-coded **Selected Skills** panel.
+   5. You can edit individual categories and item lists interactively before
+      they are forwarded to the compiler.
+   6. The final ``\\cvitem`` LaTeX block is injected into your CV template
+      automatically — no manual editing required.
+
+   To customise which skills are available for selection, edit
+   ``prompts/skills/skills_payload.md`` in your ``job_hunt/`` folder.
 
 This command is useful when you want the AI output but do not want to
 compile a PDF yet.

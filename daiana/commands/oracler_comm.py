@@ -32,6 +32,8 @@ def oracle(
                                          help="Select the 3 most relevant CV projects for this job posting."),
     select_background: bool = typer.Option(False, "--select_background",
                                            help="Select the 3 most relevant background skills for the cover letter."),
+    select_skills: bool = typer.Option(False, "--select_skills",
+                                       help="Select and rank the most relevant technical skills for this job."),
 ) -> None:
     console.print('')
     ui.rule("dAIana oracle", color=COMMAND_COLORS['oracle'])
@@ -45,5 +47,6 @@ def oracle(
         tailor_sentence=tailor_sentence,
         select_projects=select_projects,
         select_background=select_background,
+        select_skills=select_skills,
     )
     console.print('')

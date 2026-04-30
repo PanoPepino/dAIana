@@ -40,6 +40,7 @@ def run_hunt_flow(url: str, csv_path: Path, cv: bool, cl: bool, username: str, v
         select_projects = cv or cl
         select_background = cv or cl
         tailor_sentence = cl
+        select_skills = cl
         path_cv = path_cl = None
 
         _show_hunt_intro(cv=cv, cl=cl)
@@ -48,6 +49,7 @@ def run_hunt_flow(url: str, csv_path: Path, cv: bool, cl: bool, username: str, v
             result = run_oracle_pipeline(
                 url=url, extract=extract, tailor_sentence=tailor_sentence,
                 select_projects_flag=select_projects, select_background_flag=select_background,
+                select_skills_flag=select_skills
             )
 
         if not isinstance(result, dict) or not result:
@@ -58,6 +60,7 @@ def run_hunt_flow(url: str, csv_path: Path, cv: bool, cl: bool, username: str, v
         _display_oracle_result(
             result=result, extract=extract, tailor_sentence=tailor_sentence,
             select_projects=select_projects, select_background=select_background,
+            select_skills=select_skills
         )
         _maybe_edit_oracle_result(result)
 

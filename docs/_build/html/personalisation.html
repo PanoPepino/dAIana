@@ -7,9 +7,10 @@
         <link rel="canonical" href="https://panopepino.github.io/dAIana/personalisation.html" />
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2024.08.06 -->
-        <title>Personalisation - dAIana 🏹</title>
+        <title>Personalisation - 🏹 dAIana 🏹</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d75fae25" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=354aac6f" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=302659d7" />
     
     
@@ -176,7 +177,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="index.html"><div class="brand">dAIana 🏹</div></a>
+      <a href="index.html"><div class="brand">🏹 dAIana 🏹</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -200,7 +201,7 @@
       <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
   
   
-  <span class="sidebar-brand-text">dAIana 🏹</span>
+  <span class="sidebar-brand-text">🏹 dAIana 🏹</span>
   
 </a><form class="sidebar-search-container" method="get" action="search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -272,59 +273,6 @@ All personalisation lives inside <code class="docutils literal notranslate"><spa
 to verify everything is in place before your first hunt.</p>
 <section id="quick-reference">
 <h2>Quick reference<a class="headerlink" href="#quick-reference" title="Link to this heading">¶</a></h2>
-<div class="table-wrapper colwidths-given docutils container">
-<table class="docutils align-default">
-<colgroup>
-<col style="width: 40.0%" />
-<col style="width: 35.0%" />
-<col style="width: 25.0%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>What to personalise</p></th>
-<th class="head"><p>File</p></th>
-<th class="head"><p>Required?</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>API keys, provider, model, user name</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">job_hunt/.env</span></code></p></td>
-<td><p>✅ Yes</p></td>
-</tr>
-<tr class="row-odd"><td><p>Career track labels</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">prompts/career/careers.md</span></code></p></td>
-<td><p>✅ Yes</p></td>
-</tr>
-<tr class="row-even"><td><p>Project descriptions (AI payload)</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">prompts/projects/projects_payload.md</span></code></p></td>
-<td><p>✅ Yes</p></td>
-</tr>
-<tr class="row-odd"><td><p>Project name → LaTeX mapping</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">prompts/projects/projects_name_to_latex.md</span></code></p></td>
-<td><p>✅ Yes</p></td>
-</tr>
-<tr class="row-even"><td><p>Project LaTeX commands (CV)</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">cv_and_letter/loader/variants_cv.tex</span></code></p></td>
-<td><p>✅ Yes</p></td>
-</tr>
-<tr class="row-odd"><td><p>Project LaTeX commands (CL inline)</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">cv_and_letter/loader/variants_cl.tex</span></code></p></td>
-<td><p>✅ Yes</p></td>
-</tr>
-<tr class="row-even"><td><p>Background skills list</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">prompts/background/background_payload.md</span></code></p></td>
-<td><p>✅ Yes</p></td>
-</tr>
-<tr class="row-odd"><td><p>Cover letter body paragraphs</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">cv_and_letter/loader/variants_cl.tex</span></code></p></td>
-<td><p>✅ Yes</p></td>
-</tr>
-<tr class="row-even"><td><p>Sentence tone &amp; style rules</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">prompts/sentence/sentence_prompt.md</span></code></p></td>
-<td><p>Optional</p></td>
-</tr>
-</tbody>
-</table>
-</div>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="personalisation/env.html">Environment &amp; identity</a></li>
@@ -336,6 +284,7 @@ to verify everything is in place before your first hunt.</p>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="personalisation/prompts.html">Prompt personalisation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="personalisation/prompts.html#career-tracks">Career tracks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="personalisation/prompts.html#skills-inventory-ai-payload">Skills inventory (AI payload)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="personalisation/prompts.html#projects-ai-payload">Projects (AI payload)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="personalisation/prompts.html#project-name-latex-mapping">Project name → LaTeX mapping</a></li>
 <li class="toctree-l2"><a class="reference internal" href="personalisation/prompts.html#background-skills">Background skills</a></li>
@@ -440,5 +389,6 @@ to verify everything is in place before your first hunt.</p>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=5fa4622c"></script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
     </body>
 </html>

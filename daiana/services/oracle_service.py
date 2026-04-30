@@ -18,17 +18,29 @@ from daiana.config.settings import load_settings
 from daiana.infra.llm_client import build_client
 from daiana.infra.prompt_repository import make_prompt_repository, PromptRepository
 from daiana.infra.scraper import scrape_job_text
+from daiana.infra.latex_repository import latex_escape, escape_bare_ampersands
 from daiana.domain.validation import (
     validate_job_data,
     validate_sentence_data,
     validate_project_data,
     validate_background_data,
+    validate_skills_data,
 )
 from daiana.utils.constants import NON_EDITABLE
 from daiana.utils.design.colors import COMMAND_COLORS
 from daiana.utils.design.ui import rgb, _display_oracle_result, _display_updated_fields, _show_active_modes
 
 console = Console()
+
+# Key that holds the rendered LaTeX block — never shown in the interactive editor.
+_SKILLS_LATEX_KEY = "selected_skills_latex"
+
+# Pre-built set of all skill display slot keys used for change detection.
+_SKILL_DISPLAY_SLOTS: frozenset[str] = frozenset(
+    key
+    for i in range(1, 5)
+    for key in (f"_skill_cat_{i}", f"_skill_items_{i}")
+)
 
 
 # ── JSON helpers ──────────────────────────────────────────────────────────────
@@ -188,6 +200,47 @@ def select_background(job_text: str, client: OpenAI, model: str, prompts: Prompt
     return validate_background_data(parse_oracle_json(raw), set(bg_list))
 
 
+def select_skills(job_text: str, client: OpenAI, model: str, prompts: PromptRepository) -> dict:
+    """Ask the LLM to pick and reorder the 4 most relevant skill categories."""
+    schema = json.dumps(prompts.as_json("skills/skills_schema"))
+    payload = prompts.skills_payload()
+    user = (
+        f"Job posting:\n{job_text}\n\n"
+        f"Candidate skill inventory:\n{payload}\n\n"
+        f"Return ONLY valid JSON matching:\n{schema}"
+    )
+    raw = _chat(client, model, prompts.text("skills/skills_prompt"), user, temperature=0.1)
+    return validate_skills_data(parse_oracle_json(raw))
+
+
+def _render_skills_latex(selected: dict) -> str:
+    """Convert the validated 4-slot dict into a \\cvitem block string.
+
+    - category: fully escaped with latex_escape() — it is plain text
+      and must never contain raw LaTeX special characters (e.g. & → \\&).
+    - items: only bare & are escaped via escape_bare_ampersands() so that
+      intentional LaTeX markup (\\textbf{...}, etc.) is preserved.
+
+    Accepts either the raw oracle dict (keys: selected_N_category / selected_N_items)
+    or the display dict stored in result (keys: _skill_cat_N / _skill_items_N).
+    """
+    lines = []
+    for i in range(1, 5):
+        category = (
+            selected.get(f"selected_{i}_category")
+            or selected.get(f"_skill_cat_{i}", "")
+        ).strip()
+        items = (
+            selected.get(f"selected_{i}_items")
+            or selected.get(f"_skill_items_{i}", "")
+        ).strip()
+        if category and items:
+            safe_category = latex_escape(category)
+            safe_items = escape_bare_ampersands(items)
+            lines.append(f"\\cvitem{{{safe_category}}}{{{safe_items}.}}")
+    return "\n".join(lines)
+
+
 # ── Main pipeline ─────────────────────────────────────────────────────────────
 
 def run_oracle_pipeline(
@@ -197,10 +250,11 @@ def run_oracle_pipeline(
     tailor_sentence: bool = False,
     select_projects_flag: bool = False,
     select_background_flag: bool = False,
+    select_skills_flag: bool = False,
     client: OpenAI | None = None,
     model: str | None = None,
 ) -> dict:
-    if not any([extract, tailor_sentence, select_projects_flag, select_background_flag]):
+    if not any([extract, tailor_sentence, select_projects_flag, select_background_flag, select_skills_flag]):
         raise ValueError("At least one mode must be enabled.")
 
     settings = load_settings()
@@ -221,6 +275,12 @@ def run_oracle_pipeline(
     if select_background_flag:
         bg_dict = select_background(job_text, _client, _model, prompts)
         result["your_background"] = dict_values_to_sentence(bg_dict)
+    if select_skills_flag:
+        raw_skills = select_skills(job_text, _client, _model, prompts)
+        result[_SKILLS_LATEX_KEY] = _render_skills_latex(raw_skills)
+        for i in range(1, 5):
+            result[f"_skill_cat_{i}"] = raw_skills.get(f"selected_{i}_category", "")
+            result[f"_skill_items_{i}"] = raw_skills.get(f"selected_{i}_items", "")
 
     return result
 
@@ -232,25 +292,34 @@ def run_oracle_flow(
     tailor_sentence: bool,
     select_projects: bool,
     select_background: bool,
+    select_skills: bool = False,
 ) -> None:
-    if not any([extract, tailor_sentence, select_projects, select_background]):
+    if not any([extract, tailor_sentence, select_projects, select_background, select_skills]):
         console.print(
-            "[bold red]Use at least one flag: --extract, --tailor_sentence, --select_projects, --select_background[/bold red]")
+            "[bold red]Use at least one flag: --extract, --tailor_sentence, --select_projects, "
+            "--select_background, --select_skills[/bold red]"
+        )
         raise typer.Exit(code=1)
 
     _show_active_modes(
-        extract=extract, tailor_sentence=tailor_sentence,
-        select_projects=select_projects, select_background=select_background,
+        extract=extract,
+        tailor_sentence=tailor_sentence,
+        select_projects=select_projects,
+        select_background=select_background,
+        select_skills=select_skills,
     )
 
     try:
-        with console.status(f"[{rgb(COMMAND_COLORS['oracle'])}][bold]The Oracle is working ...[/bold][/{rgb(COMMAND_COLORS['oracle'])}]"):
+        with console.status(
+            f"[{rgb(COMMAND_COLORS['oracle'])}][bold]The Oracle is working ...[/bold][/{rgb(COMMAND_COLORS['oracle'])}]"
+        ):
             result = run_oracle_pipeline(
                 url=url,
                 extract=extract,
                 tailor_sentence=tailor_sentence,
                 select_projects_flag=select_projects,
                 select_background_flag=select_background,
+                select_skills_flag=select_skills,
             )
     except (ValueError, Exception) as exc:
         console.print(f"[bold red]Oracle failed: {exc}[/bold red]")
@@ -262,12 +331,29 @@ def run_oracle_flow(
 
     console.print()
     _display_oracle_result(
-        result=result, extract=extract, tailor_sentence=tailor_sentence,
-        select_projects=select_projects, select_background=select_background,
+        result=result,
+        extract=extract,
+        tailor_sentence=tailor_sentence,
+        select_projects=select_projects,
+        select_background=select_background,
+        select_skills=select_skills,
     )
 
-    editable = {k: v for k, v in result.items() if k not in NON_EDITABLE}
+    # Build editable dict: exclude the rendered LaTeX block (raw and opaque),
+    # but keep the human-readable _skill_cat_N / _skill_items_N slots so the
+    # user can tweak individual categories before passing to compiler.
+    editable = {
+        k: v
+        for k, v in result.items()
+        if k not in NON_EDITABLE and k != _SKILLS_LATEX_KEY
+    }
+
     if editable and typer.confirm("Modify fields", default=False):
         updated = edit_oracle_dict(editable)
         result.update(updated)
+
+        # If any skill display slot was touched, re-render the latex block.
+        if _SKILL_DISPLAY_SLOTS & set(updated):
+            result[_SKILLS_LATEX_KEY] = _render_skills_latex(result)
+
         _display_updated_fields(updated)

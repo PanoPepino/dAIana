@@ -8,6 +8,8 @@ from daiana.infra.latex_repository import (
     get_mode_config,
     ask_for_missing as _ask_for_missing,
     resolve_mode as _resolve_mode,
+    latex_escape,
+    escape_bare_ampersands,
 )
 
 __all__ = [
@@ -19,4 +21,6 @@ __all__ = [
     "get_mode_config",
     "_ask_for_missing",
     "_resolve_mode",
+    "latex_escape",
+    "escape_bare_ampersands",
 ]

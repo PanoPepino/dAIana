@@ -7,9 +7,10 @@
         <link rel="canonical" href="https://panopepino.github.io/dAIana/personalisation/prompts.html" />
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2024.08.06 -->
-        <title>Prompt personalisation - dAIana 🏹</title>
+        <title>Prompt personalisation - 🏹 dAIana 🏹</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d75fae25" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=302659d7" />
     
     
@@ -176,7 +177,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">dAIana 🏹</div></a>
+      <a href="../index.html"><div class="brand">🏹 dAIana 🏹</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -200,7 +201,7 @@
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
   
   
-  <span class="sidebar-brand-text">dAIana 🏹</span>
+  <span class="sidebar-brand-text">🏹 dAIana 🏹</span>
   
 </a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -280,6 +281,37 @@ and to a <code class="docutils literal notranslate"><span class="pre">\body&lt;l
 <p>Adding a label here without adding <code class="docutils literal notranslate"><span class="pre">\body&lt;label&gt;</span></code> in <code class="docutils literal notranslate"><span class="pre">variants_cl.tex</span></code>
 will cause a LaTeX compile error on cover letter jobs with that career.</p>
 </div>
+</section>
+<section id="skills-inventory-ai-payload">
+<h2>Skills inventory (AI payload)<a class="headerlink" href="#skills-inventory-ai-payload" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><strong>Location</strong>: <code class="docutils literal notranslate"><span class="pre">job_hunt/prompts/skills/skills_payload.md</span></code></p></li>
+</ul>
+<p>This file defines the technical “DNA” the LLM scans when selecting skills for your CV. It is structured into categories that map directly to the cvitem structure in your LaTeX templates.</p>
+<p>Format: JSON-like structure where each category defines label, max_items, and a list of items with associated keywords for semantic matching.</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Backend &amp; Architecture: Python (FastAPI, Django, Flask),
+Distributed Systems (gRPC, RabbitMQ, Kafka), Cloud Native (AWS Lambda, Docker, Kubernetes),
+Microservices design, System Scalability, Event-driven architecture.
+
+Data Engineering &amp; ML: SQL (PostgreSQL, Redshift),
+NoSQL (Redis, MongoDB), Big Data (Apache Spark, Airflow), ETL pipeline design,
+MLOps (MLflow, Kubeflow), Model deployment, Feature stores.
+
+DevOps &amp; Infrastructure: Infrastructure as Code (Terraform, Pulumi),
+CI/CD (GitHub Actions, GitLab CI), Monitoring &amp; Observability
+(Prometheus, Grafana, ELK Stack),
+Linux Kernel tuning, Network security, Git workflow optimization.
+
+Languages &amp; Tools: Python, Rust, Go, TypeScript, C++,
+Bash, SQL, LaTeX, VS Code, IntelliJ, Jira, Agile/Scrum.
+</pre></div>
+</div>
+<p>How it works during Oracle:</p>
+<p>The LLM parses this payload and compares your items’ keywords against the job description text.</p>
+<p>It ranks categories based on the total relevance weight of the matches found.</p>
+<p>If an exact match is missing, the LLM uses the keywords and the category context to fill slots with the most adjacent available skills.</p>
+<p>The final selection is injected as a pre-formatted LaTeX block (see selected_skills_latex).</p>
+<p>Keep category labels consistent with your template’s cvitem headers. If you change a label here, ensure the LaTeX template is updated to match, otherwise compilation will succeed but the formatting may misalign.</p>
 </section>
 <section id="projects-ai-payload">
 <h2>Projects (AI payload)<a class="headerlink" href="#projects-ai-payload" title="Link to this heading">¶</a></h2>
@@ -440,6 +472,7 @@ around them.</p>
             <ul>
 <li><a class="reference internal" href="#">Prompt personalisation</a><ul>
 <li><a class="reference internal" href="#career-tracks">Career tracks</a></li>
+<li><a class="reference internal" href="#skills-inventory-ai-payload">Skills inventory (AI payload)</a></li>
 <li><a class="reference internal" href="#projects-ai-payload">Projects (AI payload)</a></li>
 <li><a class="reference internal" href="#project-name-latex-mapping">Project name → LaTeX mapping</a></li>
 <li><a class="reference internal" href="#background-skills">Background skills</a></li>
@@ -459,5 +492,6 @@ around them.</p>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=5fa4622c"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
     </body>
 </html>

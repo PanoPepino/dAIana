@@ -32,6 +32,9 @@ Quick reference
    * - Project descriptions (AI payload)
      - ``prompts/projects/projects_payload.md``
      - ✅ Yes
+    * - Skills Inventory (AI payload)
+     - ``prompts/projects/skills_payload.md``
+     - ✅ Yes
    * - Project name → LaTeX mapping
      - ``prompts/projects/projects_name_to_latex.md``
      - ✅ Yes
@@ -49,7 +52,7 @@ Quick reference
      - ✅ Yes
    * - Sentence tone & style rules
      - ``prompts/sentence/sentence_prompt.md``
-     - Optional
+     - ✅ Yes
 
 
 .. toctree::
