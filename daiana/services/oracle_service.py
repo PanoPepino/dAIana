@@ -53,21 +53,59 @@ def _clean_llm_json(raw: str) -> str:
     return cleaned.replace("\u00a0", " ").strip()
 
 
+def _repair_invalid_json_escapes(raw: str) -> str:
+    r"""
+    Repair common LLM JSON mistakes where a single backslash is used inside
+    string values, for example \LaTeX instead of \\LaTeX.
+
+    This doubles any backslash that is NOT starting a valid JSON escape.
+
+    Valid JSON escapes are:
+    - \"
+    - \\
+    - \/
+    - \b
+    - \f
+    - \n
+    - \r
+    - \t
+    - \uXXXX  (exactly four hexadecimal digits)
+    """
+    return re.sub(
+        r'\\(?!["\\/bfnrt]|u[0-9a-fA-F]{4})',
+        r'\\\\',
+        raw,
+    )
+
+
 def parse_oracle_json(raw: str) -> dict:
     cleaned = _clean_llm_json(raw)
+
     try:
         data = json.loads(cleaned)
-    except json.JSONDecodeError as exc:
-        m = re.search(r"\{.*\}", cleaned, re.DOTALL)
-        if m:
-            try:
-                data = json.loads(m.group())
-            except json.JSONDecodeError:
-                raise ValueError(f"Oracle returned invalid JSON: {exc}\nRaw: {raw}") from exc
-        else:
-            raise ValueError(f"Oracle returned invalid JSON: {exc}\nRaw: {raw}") from exc
+    except json.JSONDecodeError:
+        repaired = _repair_invalid_json_escapes(cleaned)
+
+        try:
+            data = json.loads(repaired)
+        except json.JSONDecodeError as exc:
+            m = re.search(r"\{.*\}", repaired, re.DOTALL)
+            if m:
+                candidate = _repair_invalid_json_escapes(m.group())
+                try:
+                    data = json.loads(candidate)
+                except json.JSONDecodeError:
+                    raise ValueError(
+                        f"Oracle returned invalid JSON: {exc}\nRaw: {raw}"
+                    ) from exc
+            else:
+                raise ValueError(
+                    f"Oracle returned invalid JSON: {exc}\nRaw: {raw}"
+                ) from exc
+
     if not isinstance(data, dict):
         raise ValueError("Oracle JSON must decode into a dictionary")
+
     return data
 
 
