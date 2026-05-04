@@ -90,9 +90,9 @@ def run_hunt_flow(url: str, csv_path: Path, cv: bool, cl: bool, username: str, v
 
 def _show_hunt_intro(cv: bool, cl: bool) -> None:
     if cv and cl:
-        msg = "Extracting job information, crafting tailored sentence, choosing background and projects ..."
+        msg = "Extracting job information, crafting tailored sentence, choosing background, projects and selecteing skills..."
     elif cv:
-        msg = "Extracting job info and selecting most relevant projects ..."
+        msg = "Extracting job info and selecting most relevant projects and skills ..."
     else:
         msg = "Crafting tailored sentence, choosing background and projects ..."
     console.print(f"[bold {rgb(ORACLE)}]{msg}[/bold {rgb(ORACLE)}]")

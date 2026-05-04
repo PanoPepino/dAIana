@@ -26,7 +26,7 @@ def init(
     console.print('')
     ui.rule("dAIana init", color=COMMAND_COLORS['init'])
     console.print('')
-    ui.info("[italic]Set your hunting armory. Configure the shrine for the Oracle[/italic]", color=COMMAND_COLORS['init'])
+    ui.info("[italic]Set your hunting armory. Configure the shrine for the Oracle.[/italic]", color=COMMAND_COLORS['init'])
     console.print("")
 
     if copy_directory:

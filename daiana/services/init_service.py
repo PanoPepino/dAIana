@@ -32,7 +32,8 @@ def copy_directory_func() -> None:
     init_color = rgb(COMMAND_COLORS["init"])
     neutral_color = rgb(NEUTRAL)
 
-    console.print(f"\n[bold {init_color}]Copying[/bold {init_color}] [white]project directory[/white]\n")
+    console.print(
+        f"\n[bold {init_color}]Copying[/bold {init_color}] [white]project directory. The chosen directory will be where you will run other dAIana commands from. It will be your logistic center of applications.[/white]\n")
 
     source_dir = get_local_job_hunt()
 
@@ -71,7 +72,7 @@ def copy_directory_func() -> None:
     )
     console.print()
     console.print(
-        f"[{init_color}]Next steps:[/{init_color}]\n"
+        f"[{init_color}]Next steps ->[/{init_color}] [white]Go to the following location and set your API provider.[/white]\n"
         f"\n"
         f"[bold cyan]cd {target_dir}[/bold cyan]\n"
         f"[bold {init_color}]daiana init --set_env[/bold {init_color}]\n"
@@ -114,7 +115,7 @@ def set_env_func() -> None:
     init_color = rgb(COMMAND_COLORS["init"])
     neutral_color = rgb(NEUTRAL)
 
-    console.print(f"\n[bold {init_color}]Setting environment[/bold {init_color}]\n")
+    console.print(f"\n[bold {init_color}]Setting environment[/bold {init_color}]. [white]This will create a .env file where you will locate your SECRET API key and other important information.[/white]\n")
 
     project_dir = Path.cwd().resolve()
     env_path = project_dir / ".env"

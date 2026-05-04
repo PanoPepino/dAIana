@@ -239,7 +239,7 @@ def select_background(job_text: str, client: OpenAI, model: str, prompts: Prompt
 
 
 def select_skills(job_text: str, client: OpenAI, model: str, prompts: PromptRepository) -> dict:
-    """Ask the LLM to pick and reorder the 4 most relevant skill categories."""
+    """Ask the LLM to pick and reorder the 5 most relevant skill categories."""
     schema = json.dumps(prompts.as_json("skills/skills_schema"))
     payload = prompts.skills_payload()
     user = (

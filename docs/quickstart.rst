@@ -66,12 +66,12 @@ location, with this structure:
 .. note::
 
    All dAIana commands must be run **from inside** this ``job_hunt/`` folder.
-   The ``.env`` file created in the next step is written there.
+   This will be the main location where you will operate to create your tailored cover letter and CV, as well as your tracking job lists.
 
 Step 2 — Configure your provider
 ---------------------------------
 
-Navigate into the copied folder and run:
+This command will set things up so that you can use your AI services through your terminal. This command will guide you to create a ``.env`` file where you will write down your API provider and its associated SECRET KEY. Navigate into the previously copied folder and run:
 
 .. code-block:: bash
 
@@ -97,8 +97,7 @@ You will be prompted for:
    * - API key value
      - Your actual secret key. The input is hidden.
 
-All values are written to a ``.env`` file in the current directory and loaded
-automatically on every subsequent command.
+All values are written to the previoulsy mentioned ``.env`` file in the current directory and will loaded automatically on every subsequent command.
 
 .. tip::
 
@@ -108,7 +107,7 @@ automatically on every subsequent command.
 Step 3 — Verify your setup
 ---------------------------
 
-Before your first hunt, run:
+Now that we have set up our API provider and location of operations, it is time to check that the API works fine. Before your first hunt, run:
 
 .. code-block:: bash
 

@@ -1,17 +1,13 @@
 <div align="center">
 
-# 🏹 dAIana 🏹
+# dAIana
 *- Let the AI Goddess guide your steps when hunting down your next job position -*
 
 </div>
 
 ---
 
-
-
-
 **dAIana** is a terminal-based Python CLI that calls **AI APIs** to tailor LaTeX CVs and cover letters from job posting URLs. It **automates** scraping, extraction, personalization, and PDF compilation in one workflow.
-
 
 ## **⚠️ Before you start**
 >
@@ -21,8 +17,6 @@
 > See TEMPLATES in (`job_hunt/cv_and_letter/*.tex`)
 >
 > The idea: you build your CV and cover letter as a set of **MODULAR sections** (e.g. different project blocks, different skill summaries). dAIana then reads the job posting and picks **which sections fit best** for that specific role.
-
-
 
 ## **Quickstart**
 
@@ -35,11 +29,9 @@ daiana check --env --prompts          # Verify setup of env and prompts before h
 daiana hunt --url "https://jobs.example.com/role" --cv --cl
 ```
 
-
-
 ## **Most Relevant Commands**
 
-### 🥝 `daiana init`
+### ${\color{yellow}\texttt{daiana\ init}}$
 
 First-time setup. Configure your LLM provider and copy your `job_hunt` folder.
 
@@ -48,15 +40,12 @@ First-time setup. Configure your LLM provider and copy your `job_hunt` folder.
 | `--copy_directory` | Copy the local `job_hunt/` folder to a new path |
 | `--set_env` | Set provider, model, base URL, API key name and value — saved to `.env` |
 
-
 ```bash
 daiana init --set_env
 daiana init --copy_directory
 ```
 
-
-
-### 🩶 `daiana check`
+### ${\color{teal}\texttt{daiana\ check}}$
 
 Inspect your setup before running a hunt. Diagnose environment and prompt files.
 
@@ -69,10 +58,9 @@ Inspect your setup before running a hunt. Diagnose environment and prompt files.
 daiana check --env --prompts
 ```
 
+### ${\color{red}\texttt{daiana\ hunt}}$
 
-### 🔴 `daiana hunt`
-
-Full end-to-end pipeline: scrape → extract → tailor → compile → open .pdfsd → save.
+Full end-to-end pipeline: scrape → extract → tailor → compile → open PDFs → save.
 
 At least one of `--cv` or `--cl` must be passed.
 
@@ -96,9 +84,7 @@ daiana hunt --url "https://jobs.example.com/role" --cv --cl --username jane
 5. Asks if you want to open the generated PDF(s)
 6. Asks if you want to save the job to your CSV tracker
 
-
-
-### 🟫 `daiana show`
+### ${\color{brown}\texttt{daiana\ show}}$
 
 Display your last N saved applications for a given career path — color-coded by status with a legend.
 
@@ -114,7 +100,7 @@ daiana show -cp data -rj 10
 
 Outputs a formatted table followed by a status legend and a total application count for that given career path.
 
-### 🩷 `daiana update`
+### ${\color{pink}\texttt{daiana\ update}}$
 
 Update the status or any field of a saved job application. Finds the entry by position + company.
 
@@ -124,8 +110,6 @@ Update the status or any field of a saved job application. Finds the entry by po
 | `--status` / `-s` | Set a new application status |
 | `--field` / `-f` | Edit any other field of the saved entry |
 | `--erase` / `-e` | Erase any row |
-
-
 
 ```bash
 daiana update --career software --status
