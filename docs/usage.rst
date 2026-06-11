@@ -172,19 +172,22 @@ entries match, you are shown a numbered list to pick from.
 Scrape a job posting URL and send the text to the AI for extraction and
 tailoring without compiling PDFs.
 
-At least one of ``--extract``, ``--tailor_sentence``, ``--project_selector``,
-``--background_selector``, or ``--select_skills`` must be passed.
+At least one of ``--extract``, ``--tailor_sentence``, ``--select_projects``,
+``--select_background``, ``--select_skills``, ``--select_core_strengths``,
+or ``--select_summary`` must be passed.
 
 .. code-block:: bash
 
    daiana oracle --url "https://jobs.example.com/role" --extract --tailor_sentence
    daiana oracle --url "https://jobs.example.com/role" --extract --select_skills
-   daiana oracle --url "https://jobs.example.com/role" --extract --select_skills --project_selector
+   daiana oracle --url "https://jobs.example.com/role" --extract --select_core_strengths
+   daiana oracle --url "https://jobs.example.com/role" --extract --select_summary
+   daiana oracle --url "https://jobs.example.com/role" --extract --select_skills --select_projects
 
 **Flags**
 
 .. list-table::
-   :widths: 25 75
+   :widths: 28 72
    :header-rows: 1
 
    * - Flag
@@ -195,15 +198,23 @@ At least one of ``--extract``, ``--tailor_sentence``, ``--project_selector``,
      - Extract structured job info: position, company, location, career, and link.
    * - ``--tailor_sentence``
      - Craft a tailored phrase for the first paragraph of your cover letter.
-   * - ``--project_selector``
-     - Pick the best matching projects from your project list.
-   * - ``--background_selector``
+   * - ``--select_projects``
+     - Pick the 3 best matching projects from your projects inventory.
+   * - ``--select_background``
      - Select the 3 most relevant background items for the cover letter.
    * - ``--select_skills``
      - Rank and select the most relevant skill categories and items from your
        skills inventory (``skills_payload.md``) for the given job posting.
        The result is displayed as a **Selected Skills** panel and passed
        automatically to ``compile --cv`` as the CV skills block.
+   * - ``--select_core_strengths``
+     - Rank and select the 5 most relevant core strengths from your inventory
+       (``core_strengths_payload.md``) for the given job posting.
+       The result is displayed as a **Selected Core Strengths** panel.
+   * - ``--select_summary``
+     - Select and tailor the best summary template for the target career and
+       company. Requires ``--extract`` to be run in the same invocation so
+       that the career path can be determined.
 
 .. note::
 
@@ -221,6 +232,36 @@ At least one of ``--extract``, ``--tailor_sentence``, ``--project_selector``,
 
    To customise which skills are available for selection, edit
    ``prompts/skills/skills_payload.md`` in your ``job_hunt/`` folder.
+
+.. note::
+
+   **How ``--select_core_strengths`` works**
+
+   1. dAIana reads your ``core_strengths_payload.md`` inventory.
+   2. The LLM picks and ranks the 5 most relevant strengths for the target job.
+   3. The selection is shown in a colour-coded **Selected Core Strengths** panel.
+   4. The ordered list is injected into your CV template as a ``\\cvitem``
+      block automatically.
+
+   To customise which strengths are available for selection, edit
+   ``prompts/core_strengths/core_strengths_payload.md`` in your ``job_hunt/`` folder.
+
+.. note::
+
+   **How ``--select_summary`` works**
+
+   1. ``--extract`` must be included in the same call so that the career path
+      is known.
+   2. dAIana loads the summary template matching your career slug from
+      ``prompts/summary/summary_<career>.md``.
+   3. The LLM fills the ``[Company name]`` and ``[Company challenge]``
+      placeholders using the scraped job text.
+   4. The tailored summary is shown in a **Selected Summary** panel and
+      injected directly into your CV template.
+
+   To customise the base summary, edit
+   ``prompts/summary/summary_<career>.md`` in your ``job_hunt/`` folder.
+   One file per career slug (e.g. ``summary_software.md``, ``summary_data.md``).
 
 This command is useful when you want the AI output but do not want to
 compile a PDF yet.
