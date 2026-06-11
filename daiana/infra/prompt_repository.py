@@ -53,6 +53,28 @@ class PromptRepository:
         """Return raw skills inventory text from skills/skills_payload."""
         return self.text("skills/skills_payload")
 
+    def core_strengths_payload(self) -> str:
+        """Return raw core strengths inventory text from core_strengths/core_strengths_payload."""
+        return self.text("core_strengths/core_strengths_payload")
+
+    def career_headings(self) -> dict[str, str]:
+        """Return the career for the CV heading sentence."""
+        return self.as_json("career/career_headings")
+
+    def summary_templates(self) -> dict[str, str]:
+        """Return a dict mapping career slug → summary template text.
+        Files must be named summary_<career_slug>.md inside prompts/summary/.
+        """
+        templates: dict[str, str] = {}
+        for career in self.careers():
+            slug = career.lower().replace(" ", "_")
+            key = f"summary/summary_{slug}"
+            try:
+                templates[career] = self.text(key)
+            except Exception:
+                pass
+        return templates
+
 
 def make_prompt_repository() -> PromptRepository:
     """Build a PromptRepository from the current runtime settings."""

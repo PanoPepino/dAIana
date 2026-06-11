@@ -175,7 +175,7 @@ def _field_table(items: list[tuple[str, str]]) -> Table:
     return table
 
 
-def _panel(title: str, items: list[tuple[str, str]], color) -> Panel:
+def _panel(title: str, items: list[tuple[str, str]] | list, color) -> Panel:
     if isinstance(color, tuple) and len(color) == 3:
         color_style = f"rgb({color[0]},{color[1]},{color[2]})"
     else:
@@ -213,6 +213,39 @@ def _skills_panel(data: dict, color_style: str) -> Panel | None:
     )
 
 
+def _core_strengths_panel(data: dict, color_style: str) -> Panel | None:
+    """Build a core_strength panel from _core_strengths *data*.
+
+    Returns None when no core strengths slots are present so callers can guard easily.
+    """
+    rows: list[tuple[str, str]] = []
+    for i in range(1, 7):
+        core_strength = str(data.get(f"_core_strength_{i}", "")).strip()
+        if core_strength:
+            rows.append((f"{i}.", core_strength))
+
+    if not rows:
+        return None
+
+    return _panel(
+        "Selected core strengths (ranked by relevance)",
+        rows,
+        color=color_style,
+    )
+
+
+def _summary_panel(data: dict, color_style: str) -> Panel | None:
+    """Build a summary panel from oracle result data."""
+    summary = str(data.get("selected_summary_latex", "")).strip()
+    if not summary:
+        return None
+    return _panel(
+        "Selected summary",
+        [("", summary)],
+        color=color_style,
+    )
+
+
 def _display_oracle_result(
     result: dict,
     extract: bool,
@@ -220,6 +253,8 @@ def _display_oracle_result(
     select_projects: bool,
     select_background: bool,
     select_skills: bool = False,
+    select_core_strengths: bool = False,
+    select_summary: bool = False
 ) -> None:
     """
     Display all information collected by oracle commands as structured panels.
@@ -296,6 +331,18 @@ def _display_oracle_result(
             console.print(panel)
             console.print()
 
+    if select_core_strengths:
+        panel = _core_strengths_panel(result, oracle_color)
+        if panel is not None:
+            console.print(panel)
+            console.print()
+
+    if select_summary:
+        panel = _summary_panel(result, oracle_color)
+        if panel is not None:
+            console.print(panel)
+            console.print()
+
 
 def _display_updated_fields(updated: dict) -> None:
     """
@@ -332,6 +379,8 @@ def _show_active_modes(
     select_projects: bool,
     select_background: bool,
     select_skills: bool = False,
+    select_core_strengths: bool = False,
+    select_summary: bool = False
 ) -> list[str]:
     active: list[str] = []
 
@@ -345,6 +394,10 @@ def _show_active_modes(
         active.append("selecting relevant background skills")
     if select_skills:
         active.append("selecting and ranking relevant skills")
+    if select_core_strengths:
+        active.append("selecting and ranking relevant core strengths")
+    if select_summary:
+        active.append("selecting best possible summary and adding tailored sentence")
 
     console.print()
 

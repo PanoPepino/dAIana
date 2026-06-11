@@ -25,21 +25,6 @@ from daiana.utils.design.ui import COMMAND_COLORS, rgb
 console = Console()
 COMPILE = COMMAND_COLORS["compile"]
 
-# Default full-inventory skills block used when oracle --select_skills was not run.
-_DEFAULT_SKILLS_BLOCK = (
-    "\\cvitem{Backend \\& Architecture}{Python (FastAPI, Django, Flask), "
-    "Distributed Systems (gRPC, RabbitMQ, Kafka), Cloud Native (AWS Lambda, Docker, Kubernetes), "
-    "Microservices design, System Scalability, Event-driven architecture.}\n"
-    "\\cvitem{Data Engineering \\& ML}{SQL (PostgreSQL, Redshift), NoSQL (Redis, MongoDB), "
-    "Big Data (Apache Spark, Airflow), ETL pipeline design, MLOps (MLflow, Kubeflow), "
-    "Model deployment, Feature stores.}\n"
-    "\\cvitem{DevOps \\& Infrastructure}{Infrastructure as Code (Terraform, Pulumi), "
-    "CI/CD (GitHub Actions, GitLab CI), Monitoring \\& Observability (Prometheus, Grafana, ELK Stack), "
-    "Linux Kernel tuning, Network security.}\n"
-    "\\cvitem{Languages \\& Tools}{Python, Rust, Go, TypeScript, C++, Bash, SQL, \\LaTeX{}, "
-    "VS Code, IntelliJ, Agile/Scrum.}"
-)
-
 
 def _collect_compile_data(mode: str, seed_data: dict | None = None) -> dict:
     seed_data = seed_data or {}
@@ -54,16 +39,19 @@ def _collect_compile_data(mode: str, seed_data: dict | None = None) -> dict:
     }
     if mode == "cl":
         resolved["your_background"] = ask_for_missing("your_background", "6) Your tailored background", seed_data)
-        resolved["sentence_first_paragraph"] = ask_for_missing("sentence_first_paragraph", "7) Company challenge(s)", seed_data)
+        resolved["sentence_first_paragraph"] = ask_for_missing(
+            "sentence_first_paragraph", "7) Company challenge(s)", seed_data)
         resolved["project_one"] = ask_for_missing("project_one", "8) First relevant project", seed_data)
         resolved["project_two"] = ask_for_missing("project_two", "9) Second relevant project", seed_data)
     if mode == "cv":
-        resolved["project_one"] = ask_for_missing("project_one", "6) First relevant project", seed_data)
-        resolved["project_two"] = ask_for_missing("project_two", "7) Second relevant project", seed_data)
-        resolved["project_three"] = ask_for_missing("project_three", "8) Last relevant project", seed_data)
-        # Skills block: taken silently from seed_data (set by oracle --select_skills).
-        # Not prompted interactively — the rendered LaTeX is not human-typeable.
+        resolved["project_one"] = ask_for_missing("project_one", "6) First relevant project",   seed_data)
+        resolved["project_two"] = ask_for_missing("project_two", "7) Second relevant project",  seed_data)
+        resolved["project_three"] = ask_for_missing("project_three", "8) Last relevant  project", seed_data)
         resolved["selected_skills_latex"] = seed_data.get("selected_skills_latex", "")
+        resolved["cv_heading_sentence"] = seed_data.get("cv_heading_sentence", "")
+        resolved["selected_core_strengths_latex"] = seed_data.get("selected_core_strengths_latex", "")
+        resolved["selected_summary_latex"] = seed_data.get("selected_summary_latex", "")
+
     return resolved
 
 
@@ -88,9 +76,14 @@ def build_replacements(mode: str, data: dict) -> dict:
             "project_one": f"\\{data.get('project_one', '')}",
             "project_two": f"\\{data.get('project_two', '')}",
             "project_three": f"\\{data.get('project_three', '')}",
+            "cv_heading_sentence": data.get("cv_heading_sentence") or "",
             # Use oracle selection when available, otherwise fall back to full inventory.
-            "selected_skills_latex": data.get("selected_skills_latex") or _DEFAULT_SKILLS_BLOCK,
+            "selected_skills_latex": data.get("selected_skills_latex"),
+            "selected_core_strengths_latex": data.get('selected_core_strengths_latex'),
+            "selected_summary_latex": data.get('selected_summary_latex')
         })
+
+        print(data)
     return r
 
 
@@ -147,7 +140,7 @@ def compile_tex(
         for i in range(passes):
             result = subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                                     cwd=tmp_tex.parent, env=env) if silent else \
-                     subprocess.run(cmd, capture_output=False, cwd=tmp_tex.parent, env=env)
+                subprocess.run(cmd, capture_output=False, cwd=tmp_tex.parent, env=env)
             if verbose:
                 console.print(f"[bold {rgb(COMPILE)}]Pass {i+1}/{passes}:[/bold {rgb(COMPILE)}]")
                 console.print(extract_errors(read_log(log_path))[-500:])

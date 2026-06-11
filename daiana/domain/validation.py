@@ -55,3 +55,23 @@ def validate_skills_data(data: dict) -> dict:
         result[f"selected_{i}_category"] = str(data.get(f"selected_{i}_category") or "").strip()
         result[f"selected_{i}_items"] = str(data.get(f"selected_{i}_items") or "").strip()
     return result
+
+
+def validate_core_strengths_data(data: dict) -> dict:
+    """Ensure all 6 core_strengths slots exist; coerce missing ones to empty strings."""
+    result: dict = {}
+    for i in range(1, 6):
+        result[f"selected_{i}_core_strength"] = str(data.get(f"selected_{i}_core_strength") or "").strip()
+    return result
+
+
+def validate_summary_data(data: dict) -> dict:
+    """Ensure the LLM returned a filled summary string."""
+    summary = str(data.get("selected_summary") or "").strip()
+    if not summary:
+        raise ValueError("Oracle returned an empty summary.")
+    if "[Company name]" in summary or "[Company challenge]" in summary:
+        raise ValueError(
+            "Oracle failed to replace placeholders in summary."
+        )
+    return {"selected_summary": summary}

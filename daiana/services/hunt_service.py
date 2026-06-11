@@ -14,7 +14,7 @@ from daiana.services.save_service import save_job_in_csv
 from daiana.infra.filesystem import open_with_default_app
 from daiana.utils.design.ui import rgb, _panel, _display_oracle_result
 from daiana.utils.design.colors import COMMAND_COLORS
-from daiana.utils.constants import NON_EDITABLE
+from daiana.utils.constants import NON_EDITABLE, HIDDEN_FROM_EDITOR
 import click
 
 console = Console()
@@ -30,7 +30,12 @@ def _validate_hunt_mode(cv: bool, cl: bool) -> None:
         raise click.ClickException("Use at least one flag: --cv and/or --cl")
 
 
-def run_hunt_flow(url: str, csv_path: Path, cv: bool, cl: bool, username: str, verbose: bool) -> None:
+def run_hunt_flow(url: str,
+                  csv_path: Path,
+                  cv: bool,
+                  cl: bool,
+                  username: str,
+                  verbose: bool) -> None:
     start = perf_counter()
     try:
         console.print()
@@ -38,18 +43,25 @@ def run_hunt_flow(url: str, csv_path: Path, cv: bool, cl: bool, username: str, v
 
         extract = cv or cl
         select_projects = cv or cl
-        select_background = cv or cl
+        select_background = cl
         tailor_sentence = cl
-        select_skills = cl
+        select_skills = cv
+        select_core_strengths = cv
+        select_summary = cv
         path_cv = path_cl = None
 
         _show_hunt_intro(cv=cv, cl=cl)
 
         with console.status(f"[bold {rgb(ORACLE)}]Consulting oracle[/bold {rgb(ORACLE)}] ..."):
             result = run_oracle_pipeline(
-                url=url, extract=extract, tailor_sentence=tailor_sentence,
-                select_projects_flag=select_projects, select_background_flag=select_background,
-                select_skills_flag=select_skills
+                url=url,
+                extract=extract,
+                tailor_sentence=tailor_sentence,
+                select_projects_flag=select_projects,
+                select_background_flag=select_background,
+                select_skills_flag=select_skills,
+                select_core_strengths_flag=select_core_strengths,
+                select_summary_flag=select_summary
             )
 
         if not isinstance(result, dict) or not result:
@@ -58,9 +70,14 @@ def run_hunt_flow(url: str, csv_path: Path, cv: bool, cl: bool, username: str, v
 
         console.print()
         _display_oracle_result(
-            result=result, extract=extract, tailor_sentence=tailor_sentence,
-            select_projects=select_projects, select_background=select_background,
-            select_skills=select_skills
+            result=result,
+            extract=extract,
+            tailor_sentence=tailor_sentence,
+            select_projects=select_projects,
+            select_background=select_background,
+            select_skills=select_skills,
+            select_core_strengths=select_core_strengths,
+            select_summary=select_summary
         )
         _maybe_edit_oracle_result(result)
 
@@ -90,9 +107,9 @@ def run_hunt_flow(url: str, csv_path: Path, cv: bool, cl: bool, username: str, v
 
 def _show_hunt_intro(cv: bool, cl: bool) -> None:
     if cv and cl:
-        msg = "Extracting job information, crafting tailored sentence, choosing background, projects and selecteing skills..."
+        msg = "Extracting job information, crafting tailored sentence, choosing background, projects and selecting skills..."
     elif cv:
-        msg = "Extracting job info and selecting most relevant projects and skills ..."
+        msg = "Extracting job info and selecting best suited headliner, summary, most relevant projects, technical skills and core strengths ..."
     else:
         msg = "Crafting tailored sentence, choosing background and projects ..."
     console.print(f"[bold {rgb(ORACLE)}]{msg}[/bold {rgb(ORACLE)}]")
@@ -100,7 +117,8 @@ def _show_hunt_intro(cv: bool, cl: bool) -> None:
 
 
 def _maybe_edit_oracle_result(result: dict) -> None:
-    editable = {k: v for k, v in result.items() if k not in NON_EDITABLE}
+    editable = {k: v for k, v in result.items()
+                if k not in NON_EDITABLE and k not in HIDDEN_FROM_EDITOR}
     if not editable:
         return
     console.print(f"Would you like to [{rgb(UPDATE)}]modify[/{rgb(UPDATE)}] this information?")

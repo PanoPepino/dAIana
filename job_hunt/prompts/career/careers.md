@@ -1,3 +1,0 @@
-{
-  "options": ["data", "backend", "product"]
-}

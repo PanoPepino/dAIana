@@ -26,6 +26,8 @@ _LATEX_SPECIAL: list[tuple[str, str]] = [
     ("}",  r"\}"),
     ("~",  r"\textasciitilde{}"),
     ("^",  r"\textasciicircum{}"),
+    ("|",  r"\textbar{}"),           # ← vertical bar
+    ("·",  r"\textperiodcentered{}"),  # ← middle dot U+00B7
 ]
 
 

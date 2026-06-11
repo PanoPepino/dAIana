@@ -25,6 +25,8 @@ from daiana.domain.validation import (
     validate_project_data,
     validate_background_data,
     validate_skills_data,
+    validate_core_strengths_data,
+    validate_summary_data
 )
 from daiana.utils.constants import NON_EDITABLE
 from daiana.utils.design.colors import COMMAND_COLORS
@@ -34,6 +36,8 @@ console = Console()
 
 # Key that holds the rendered LaTeX block — never shown in the interactive editor.
 _SKILLS_LATEX_KEY = "selected_skills_latex"
+_CORE_STRENGTHS_LATEX_KEY = "selected_core_strengths_latex"
+_SUMMARY_LATEX_KEY = "selected_summary_latex"
 
 # Pre-built set of all skill display slot keys used for change detection.
 _SKILL_DISPLAY_SLOTS: frozenset[str] = frozenset(
@@ -238,7 +242,10 @@ def select_background(job_text: str, client: OpenAI, model: str, prompts: Prompt
     return validate_background_data(parse_oracle_json(raw), set(bg_list))
 
 
-def select_skills(job_text: str, client: OpenAI, model: str, prompts: PromptRepository) -> dict:
+def select_skills(job_text: str,
+                  client: OpenAI,
+                  model: str,
+                  prompts: PromptRepository) -> dict:
     """Ask the LLM to pick and reorder the 5 most relevant skill categories."""
     schema = json.dumps(prompts.as_json("skills/skills_schema"))
     payload = prompts.skills_payload()
@@ -252,7 +259,7 @@ def select_skills(job_text: str, client: OpenAI, model: str, prompts: PromptRepo
 
 
 def _render_skills_latex(selected: dict) -> str:
-    """Convert the validated 4-slot dict into a \\cvitem block string.
+    """Convert the validated 4-slot dict into a \\itemize block string.
 
     - category: fully escaped with latex_escape() — it is plain text
       and must never contain raw LaTeX special characters (e.g. & → \\&).
@@ -275,8 +282,69 @@ def _render_skills_latex(selected: dict) -> str:
         if category and items:
             safe_category = latex_escape(category)
             safe_items = escape_bare_ampersands(items)
-            lines.append(f"\\cvitem{{{safe_category}}}{{{safe_items}.}}")
+            lines.append(f"\\item \\textbf{{{safe_category}}}: {safe_items}.")
     return "\n".join(lines)
+
+
+def select_core_strengths(job_text: str, client: OpenAI, model: str, prompts: PromptRepository) -> dict:
+    """Ask the LLM to pick and reorder the 5 most relevant core strengths."""
+    schema = json.dumps(prompts.as_json("core_strengths/core_strengths_schema"))
+    payload = prompts.core_strengths_payload()
+    user = (
+        f"Job posting:\n{job_text}\n\n"
+        f"Candidate core strengths inventory:\n{payload}\n\n"
+        f"Return ONLY valid JSON matching:\n{schema}"
+    )
+    raw = _chat(client, model, prompts.text("core_strengths/core_strengths_prompt"), user, temperature=0.1)
+    return validate_core_strengths_data(parse_oracle_json(raw))
+
+
+def _render_core_strengths_latex(selected: dict) -> str:
+    """Convert the validated 6-slot dict into an \\itemize.
+
+    - strength: fully escaped with latex_escape() — it is plain text
+      and must never contain raw LaTeX special characters (e.g. & → \\&).
+
+    Accepts either the raw oracle dict (keys: selected_N_category)
+    or the display dict stored in result (keys: _skill_cat_N).
+    """
+    lines = []
+    for i in range(1, 6):
+        category = (
+            selected.get(f"selected_{i}_core_strength")
+            or selected.get(f"_core_strength_{i}", "")
+        ).strip()
+        if category:
+            safe_category = latex_escape(category)
+            lines.append(f"\\item {safe_category}")
+    return "\n".join(lines)
+
+
+def select_summary(
+    job_text: str,
+    career: str,
+    client: OpenAI,
+    model: str,
+    prompts: PromptRepository,
+) -> dict:
+    """Pick the career-matched template and fill [Company name] / [Company challenge]."""
+    templates = prompts.summary_templates()
+    template = templates.get(career)
+    if not template:
+        raise ValueError(
+            f"No summary template found for career '{career}'. "
+            f"Available: {list(templates.keys())}"
+        )
+    schema = json.dumps(prompts.as_json("summary/summary_schema"))
+    system = prompts.text("summary/summary_prompt")
+    user = (
+        f"Career path: {career}\n\n"
+        f"Job posting:\n{job_text}\n\n"
+        f"Summary template:\n{template}\n\n"
+        f"Return ONLY valid JSON matching:\n{schema}"
+    )
+    raw = _chat(client, model, system, user, temperature=0.4)
+    return validate_summary_data(parse_oracle_json(raw))
 
 
 # ── Main pipeline ─────────────────────────────────────────────────────────────
@@ -289,10 +357,18 @@ def run_oracle_pipeline(
     select_projects_flag: bool = False,
     select_background_flag: bool = False,
     select_skills_flag: bool = False,
+    select_core_strengths_flag: bool = False,
+    select_summary_flag: bool = False,
     client: OpenAI | None = None,
     model: str | None = None,
 ) -> dict:
-    if not any([extract, tailor_sentence, select_projects_flag, select_background_flag, select_skills_flag]):
+    if not any([extract,
+                tailor_sentence,
+                select_projects_flag,
+                select_background_flag,
+                select_skills_flag,
+                select_core_strengths_flag,
+                select_summary_flag]):
         raise ValueError("At least one mode must be enabled.")
 
     settings = load_settings()
@@ -304,6 +380,10 @@ def run_oracle_pipeline(
 
     if extract:
         result.update(extract_job(job_text, url, _client, _model, prompts))
+    if "career" in result:
+        headings = prompts.career_headings()
+        raw_heading = headings.get(result["career"], "")
+        result["cv_heading_sentence"] = latex_escape(raw_heading)
     if tailor_sentence:
         sentence = write_sentence(job_text, url, _client, _model, prompts)
         result.update({k: v for k, v in sentence.items() if k not in result})
@@ -319,6 +399,23 @@ def run_oracle_pipeline(
         for i in range(1, 5):
             result[f"_skill_cat_{i}"] = raw_skills.get(f"selected_{i}_category", "")
             result[f"_skill_items_{i}"] = raw_skills.get(f"selected_{i}_items", "")
+    if select_core_strengths_flag:
+        raw_core_strengths = select_core_strengths(job_text, _client, _model, prompts)
+        result[_CORE_STRENGTHS_LATEX_KEY] = _render_core_strengths_latex(raw_core_strengths)
+        for i in range(1, 6):
+            result[f'_core_strength_{i}'] = raw_core_strengths.get(f"selected_{i}_core_strength", "")
+
+    if select_summary_flag:
+        career = result.get("career", "")
+        if not career:
+            raise ValueError(
+                "--select_summary requires --extract to be run first "
+                "so that the career path can be determined."
+            )
+        summary_data = select_summary(job_text, career, _client, _model, prompts)
+        result[_SUMMARY_LATEX_KEY] = summary_data['selected_summary']
+
+    print(result)
 
     return result
 
@@ -331,11 +428,19 @@ def run_oracle_flow(
     select_projects: bool,
     select_background: bool,
     select_skills: bool = False,
+    select_core_strengths: bool = False,
+    select_summary: bool = False
 ) -> None:
-    if not any([extract, tailor_sentence, select_projects, select_background, select_skills]):
+    if not any([extract,
+                tailor_sentence,
+                select_projects,
+                select_background,
+                select_skills,
+                select_core_strengths,
+                select_summary]):
         console.print(
             "[bold red]Use at least one flag: --extract, --tailor_sentence, --select_projects, "
-            "--select_background, --select_skills[/bold red]"
+            "--select_background, --select_skills, --select_core_strengths, --select_summary[/bold red]"
         )
         raise typer.Exit(code=1)
 
@@ -345,6 +450,8 @@ def run_oracle_flow(
         select_projects=select_projects,
         select_background=select_background,
         select_skills=select_skills,
+        select_core_strengths=select_core_strengths,
+        select_summary=select_summary
     )
 
     try:
@@ -358,6 +465,8 @@ def run_oracle_flow(
                 select_projects_flag=select_projects,
                 select_background_flag=select_background,
                 select_skills_flag=select_skills,
+                select_core_strengths_flag=select_core_strengths,
+                select_summary_flag=select_summary
             )
     except (ValueError, Exception) as exc:
         console.print(f"[bold red]Oracle failed: {exc}[/bold red]")
@@ -375,6 +484,8 @@ def run_oracle_flow(
         select_projects=select_projects,
         select_background=select_background,
         select_skills=select_skills,
+        select_core_strengths=select_core_strengths,
+        select_summary=select_summary
     )
 
     # Build editable dict: exclude the rendered LaTeX block (raw and opaque),
