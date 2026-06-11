@@ -29,11 +29,20 @@ Quick reference
    * - Career track labels
      - ``prompts/career/careers.md``
      - ✅ Yes
+   * - Career heading sentence (CV header)
+     - ``prompts/career/career_headings.md``
+     - ✅ Yes
    * - Project descriptions (AI payload)
      - ``prompts/projects/projects_payload.md``
      - ✅ Yes
-    * - Skills Inventory (AI payload)
-     - ``prompts/projects/skills_payload.md``
+   * - Skills inventory (AI payload)
+     - ``prompts/skills/skills_payload.md``
+     - ✅ Yes
+   * - Core strengths inventory (AI payload)
+     - ``prompts/core_strengths/core_strengths_payload.md``
+     - ✅ Yes
+   * - Summary templates (one per career)
+     - ``prompts/summary/summary_<career>.md``
      - ✅ Yes
    * - Project name → LaTeX mapping
      - ``prompts/projects/projects_name_to_latex.md``
