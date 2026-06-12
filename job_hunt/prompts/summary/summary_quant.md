@@ -1,0 +1,1 @@
+Software engineer with 5+ years delivering production-grade backend systems with measurable impact. At [Company name], I am keen to apply that experience to [Company challenge] — combining pragmatic engineering with a strong focus on reliability, performance, and clean, testable code. I work best in teams where ownership, code quality, and fast iteration are core values.
