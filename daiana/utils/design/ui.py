@@ -175,7 +175,7 @@ def _field_table(items: list[tuple[str, str]]) -> Table:
     """
     General function to add columns to a table.
     """
-    table = Table.grid(padding=(1, 1))
+    table = Table.grid(padding=(0, 1))
     table.add_column(style="white", no_wrap=True)
     table.add_column(style="white")
 
@@ -196,7 +196,7 @@ def _panel(title: str, items: list[tuple[str, str]] | list, color) -> Panel:
         title=f"[bold {color_style}]{title}[/bold {color_style}]",
         title_align="left",
         border_style=color_style,
-        padding=(1, 2),
+        padding=(0, 1),
         expand=False,
     )
 
@@ -224,13 +224,9 @@ def _skills_panel(data: dict, color_style: str) -> Panel | None:
 
 
 def _core_strengths_panel(data: dict, color_style: str) -> Panel | None:
-    """Build a core_strength panel from _core_strengths *data*.
-
-    Returns None when no core strengths slots are present so callers can guard easily.
-    """
     rows: list[tuple[str, str]] = []
     for i in range(1, 7):
-        core_strength = str(data.get(f"core_strength_{i}", "")).strip()
+        core_strength = str(data.get(f"_core_strength_{i}", "")).strip()  # _ prefix was missing
         if core_strength:
             rows.append((f"{i}.", core_strength))
 
@@ -274,7 +270,7 @@ def _fit_panel(data: dict, color_style: str) -> Panel | None:
         "bold yellow" if isinstance(score, int) and score >= 45 else
         "bold red"
     )
-    overall_table = Table.grid(padding=(1, 1))
+    overall_table = Table.grid(padding=(0, 1))
     overall_table.add_column(style="bold white", no_wrap=True)
     overall_table.add_column(style="white")
     overall_table.add_row("Score:",      f"[{score_color}]{score}/100[/{score_color}]")
@@ -283,10 +279,10 @@ def _fit_panel(data: dict, color_style: str) -> Panel | None:
 
     overall_panel = Panel(
         overall_table,
-        title=f"[bold {color_style}]Overall[/bold {color_style}]",
+        title=f"[bold {color_style}]Overall Assesment[/bold {color_style}]",
         title_align="left",
         border_style=color_style,
-        padding=(1, 1),
+        padding=(0, 1),
         expand=True,
     )
 
@@ -313,7 +309,7 @@ def _fit_panel(data: dict, color_style: str) -> Panel | None:
         title=f"[bold {color_style}]Job Character[/bold {color_style}]",
         title_align="left",
         border_style=color_style,
-        padding=(1, 1),
+        padding=(0, 1),
         expand=True,
     )
 
@@ -332,6 +328,7 @@ def _fit_panel(data: dict, color_style: str) -> Panel | None:
             dim.capitalize(),
             f"[{level_style}]{level.upper()}[/{level_style}]",
             evidence,
+            end_section=True,
         )
 
     riasec_panel = Panel(
@@ -339,7 +336,7 @@ def _fit_panel(data: dict, color_style: str) -> Panel | None:
         title=f"[bold {color_style}]RIASEC Fit[/bold {color_style}]",
         title_align="left",
         border_style=color_style,
-        padding=(1, 1),
+        padding=(0, 1),
         expand=True,
     )
 
@@ -363,6 +360,7 @@ def _display_oracle_result(
     """
     oracle_color = rgb(COMMAND_COLORS["oracle"])
 
+    # 1. Extracted metadata
     if extract:
         console.print(_panel(
             "Extracted data",
@@ -375,8 +373,47 @@ def _display_oracle_result(
             ],
             color=oracle_color,
         ))
+
+    # 2. Fit analysis
+    if analyze_fit:
+        panel = _fit_panel(result, oracle_color)
+        if panel is not None:
+            console.print(panel)
+
+    # 3. Summary
+    if select_summary:
+        panel = _summary_panel(result, oracle_color)
+        if panel is not None:
+            console.print(panel)
+
+    # 4. Core strengths
+    if select_core_strengths:
+        panel = _core_strengths_panel(result, oracle_color)
+        if panel is not None:
+            console.print(panel)
+
+    # 5. Skills
+    if select_skills:
+        panel = _skills_panel(result, oracle_color)
+        if panel is not None:
+            console.print(panel)
+
+    # 6. Projects
+    if select_projects:
+        rows = []
+        for i, proj_key in enumerate(["project_one", "project_two", "project_three"], 1):
+            proj_name = result.get(proj_key, "")
+            reason = result.get(f"reason_selected_{i}", "-")
+            rows.append((f"{i}. {proj_name}:", reason))
+
+        console.print(_panel(
+            "Selected projects",
+            rows,
+            color=oracle_color,
+        ))
         console.print()
 
+    # 7. Background + sentence (cover letter slots)
     if tailor_sentence or select_background:
         console.print(_panel(
             "Background skills and tailored sentence",
@@ -386,36 +423,8 @@ def _display_oracle_result(
             ],
             color=oracle_color,
         ))
-        console.print()
 
-    if select_projects:
-        projects_panel = _panel(
-            "Selected projects",
-            [
-                ("project_one:", result.get("project_one", "")),
-                ("project_two:", result.get("project_two", "")),
-                ("project_three:", result.get("project_three", "")),
-            ],
-            color=oracle_color,
-        )
-
-        reasons_text = []
-        for i, proj_key in enumerate(["project_one", "project_two", "project_three"], 1):
-            proj_name = result.get(proj_key, "")
-            reason = result.get(f"reason_selected_{i}", "-")
-            reasons_text.append(f"{proj_name}: {reason}")
-
-        reasons_panel = _panel(
-            "Reasons for choosing those projects",
-            [("", "\n\n".join(reasons_text))],
-            color=oracle_color,
-        )
-
-        console.print(
-            Columns([projects_panel, reasons_panel], equal=True, expand=True)
-        )
-        console.print()
-
+    # 8. Extra metadata
     if tailor_sentence:
         console.print(_panel(
             "Extra material (not included in documents)",
@@ -426,30 +435,6 @@ def _display_oracle_result(
             color=oracle_color,
         ))
         console.print()
-
-    if select_skills:
-        panel = _skills_panel(result, oracle_color)
-        if panel is not None:
-            console.print(panel)
-            console.print()
-
-    if select_core_strengths:
-        panel = _core_strengths_panel(result, oracle_color)
-        if panel is not None:
-            console.print(panel)
-            console.print()
-
-    if select_summary:
-        panel = _summary_panel(result, oracle_color)
-        if panel is not None:
-            console.print(panel)
-            console.print()
-
-    if analyze_fit:
-        panel = _fit_panel(result, oracle_color)
-        if panel is not None:
-            console.print(panel)
-            console.print()
 
 
 def _display_updated_fields(updated: dict) -> None:

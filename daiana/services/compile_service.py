@@ -83,7 +83,6 @@ def build_replacements(mode: str, data: dict) -> dict:
             "selected_summary_latex": data.get('selected_summary_latex')
         })
 
-        print(data)
     return r
 
 

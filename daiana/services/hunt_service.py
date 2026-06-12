@@ -43,12 +43,13 @@ def run_hunt_flow(url: str,
         _validate_hunt_mode(cv, cl)
 
         extract = cv or cl
+        analyze_fit = cv or cl
+        select_summary = cv
+        select_core_strengths = cv
+        select_skills = cv
         select_projects = cv or cl
         select_background = cl
-        tailor_sentence = cl or cv
-        select_skills = cv
-        select_core_strengths = cv
-        select_summary = cv
+        tailor_sentence = cl
         path_cv = path_cl = None
 
         _show_hunt_intro(cv=cv, cl=cl)
@@ -57,12 +58,13 @@ def run_hunt_flow(url: str,
             result = run_oracle_pipeline(
                 url=url,
                 extract=extract,
-                tailor_sentence=tailor_sentence,
+                analyze_fit_flag=analyze_fit,
+                select_summary_flag=select_summary,
+                select_core_strengths_flag=select_core_strengths,
+                select_skills_flag=select_skills,
                 select_projects_flag=select_projects,
                 select_background_flag=select_background,
-                select_skills_flag=select_skills,
-                select_core_strengths_flag=select_core_strengths,
-                select_summary_flag=select_summary
+                tailor_sentence=tailor_sentence,
             )
 
         if not isinstance(result, dict) or not result:
@@ -73,12 +75,13 @@ def run_hunt_flow(url: str,
         _display_oracle_result(
             result=result,
             extract=extract,
-            tailor_sentence=tailor_sentence,
-            select_projects=select_projects,
-            select_background=select_background,
-            select_skills=select_skills,
+            analyze_fit=analyze_fit,
+            select_summary=select_summary,
             select_core_strengths=select_core_strengths,
-            select_summary=select_summary
+            select_skills=select_skills,
+            select_projects=select_projects,
+            tailor_sentence=tailor_sentence,
+            select_background=select_background,
         )
         _maybe_edit_oracle_result(result)
 
@@ -108,9 +111,9 @@ def run_hunt_flow(url: str,
 
 def _show_hunt_intro(cv: bool, cl: bool) -> None:
     if cv and cl:
-        msg = "Extracting job information, crafting tailored sentence, choosing background, projects and selecting skills..."
+        msg = "Extracting job information, analyzing how well you fit, crafting tailored sentence, choosing background, projects and selecting skills..."
     elif cv:
-        msg = "Extracting job info and selecting best suited headliner, summary, most relevant projects, technical skills and core strengths ..."
+        msg = "Extracting job info, analyzing how well you fit, selecting best suited headliner, summary, most relevant projects, technical skills and core strengths ..."
     else:
         msg = "Crafting tailored sentence, choosing background and projects ..."
     console.print(f"[bold {rgb(ORACLE)}]{msg}[/bold {rgb(ORACLE)}]")
