@@ -75,6 +75,14 @@ class PromptRepository:
                 pass
         return templates
 
+    def fit_prompt(self) -> str:
+        """Return the fit analysis system prompt."""
+        return self.text("fit/fit_prompt")
+
+    def fit_payload(self) -> str:
+        """Return the user's personal RIASEC/fit profile."""
+        return self.text("fit/fit_payload")
+
 
 def make_prompt_repository() -> PromptRepository:
     """Build a PromptRepository from the current runtime settings."""

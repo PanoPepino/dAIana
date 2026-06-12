@@ -73,9 +73,9 @@ def build_replacements(mode: str, data: dict) -> dict:
         })
     if mode == "cv":
         r.update({
-            "project_one": f"\\{data.get('project_one', '')}",
-            "project_two": f"\\{data.get('project_two', '')}",
-            "project_three": f"\\{data.get('project_three', '')}",
+            "project_one": f"{data.get('project_one', '')}",
+            "project_two": f"{data.get('project_two', '')}",
+            "project_three": f"{data.get('project_three', '')}",
             "cv_heading_sentence": data.get("cv_heading_sentence") or "",
             # Use oracle selection when available, otherwise fall back to full inventory.
             "selected_skills_latex": data.get("selected_skills_latex"),

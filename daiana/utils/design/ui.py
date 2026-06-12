@@ -17,12 +17,22 @@ console = Console()
 
 # Keys that must never be printed as raw text.
 _SKILLS_LATEX_KEY = "selected_skills_latex"
+_CORE_KEY = 'selected_core_strengths_latex'
 _SKILL_DISPLAY_SLOTS: frozenset[str] = frozenset(
     key
     for i in range(1, 5)
     for key in (f"_skill_cat_{i}", f"_skill_items_{i}")
 )
-_HIDDEN_KEYS: frozenset[str] = _SKILL_DISPLAY_SLOTS | {_SKILLS_LATEX_KEY}
+
+
+_FIT_KEY = "_fit_analysis"
+_HIDDEN_KEYS: frozenset[str] = _SKILL_DISPLAY_SLOTS | {_SKILLS_LATEX_KEY, _FIT_KEY}
+
+_LEVEL_COLOR = {  # For RIASEC Panel
+    "high":   "bold green",
+    "medium": "bold yellow",
+    "low":    "bold red",
+}
 
 
 def rgb(color: tuple[int, int, int]) -> str:
@@ -73,7 +83,7 @@ class DaianaUI:
             title=f"[bold {rgb(border_color)}]{title}[/bold {rgb(border_color)}]",
             title_align="center",
             border_style=rgb(border_color),
-            padding=(1, 2),
+            padding=(1, 1),
             expand=False,
         )
         self.console.print(Align.center(renderable))
@@ -165,7 +175,7 @@ def _field_table(items: list[tuple[str, str]]) -> Table:
     """
     General function to add columns to a table.
     """
-    table = Table.grid(padding=(0, 1))
+    table = Table.grid(padding=(1, 1))
     table.add_column(style="white", no_wrap=True)
     table.add_column(style="white")
 
@@ -220,7 +230,7 @@ def _core_strengths_panel(data: dict, color_style: str) -> Panel | None:
     """
     rows: list[tuple[str, str]] = []
     for i in range(1, 7):
-        core_strength = str(data.get(f"_core_strength_{i}", "")).strip()
+        core_strength = str(data.get(f"core_strength_{i}", "")).strip()
         if core_strength:
             rows.append((f"{i}.", core_strength))
 
@@ -246,6 +256,97 @@ def _summary_panel(data: dict, color_style: str) -> Panel | None:
     )
 
 
+def _fit_panel(data: dict, color_style: str) -> Panel | None:
+    """Build RIASEC fit display: overall → job character → riasec grid."""
+    fit = data.get("_fit_analysis")
+    if not fit or not isinstance(fit, dict):
+        return None
+
+    riasec = fit.get("riasec_fit", {})
+    overall = fit.get("overall", {})
+    score = overall.get("fit_score", "—")
+    fit_text = overall.get("fit", "—")
+    blind_spot = overall.get("blind_spot", "—")
+
+    # ── 1. Overall ────────────────────────────────────────────────────────────
+    score_color = (
+        "bold green" if isinstance(score, int) and score >= 70 else
+        "bold yellow" if isinstance(score, int) and score >= 45 else
+        "bold red"
+    )
+    overall_table = Table.grid(padding=(1, 1))
+    overall_table.add_column(style="bold white", no_wrap=True)
+    overall_table.add_column(style="white")
+    overall_table.add_row("Score:",      f"[{score_color}]{score}/100[/{score_color}]")
+    overall_table.add_row("Fit:",        fit_text)
+    overall_table.add_row("Blind spot:", blind_spot)
+
+    overall_panel = Panel(
+        overall_table,
+        title=f"[bold {color_style}]Overall[/bold {color_style}]",
+        title_align="left",
+        border_style=color_style,
+        padding=(1, 1),
+        expand=True,
+    )
+
+    # ── 2. Job Character ──────────────────────────────────────────────────────
+    company_values = " · ".join(fit.get("company_values", [])) or "—"
+    jc = fit.get("job_character", {})
+    concepts = fit.get("top_concepts", [])
+    concepts_text = "\n".join(
+        f"{c.get('label', '')}: {c.get('why', '')}" for c in concepts
+    ) or "—"
+
+    meta_table = Table.grid(padding=(1, 1))
+    meta_table.add_column(style="bold white", no_wrap=True)
+    meta_table.add_column(style="white")
+    meta_table.add_row("Values:",         company_values)
+    meta_table.add_row("Working style:",  jc.get("working_style", "—"))
+    meta_table.add_row("Thinking style:", jc.get("thinking_style", "—"))
+    meta_table.add_row("Collaboration:",  jc.get("team_collaboration", "—"))
+    meta_table.add_row("Stakeholders:",   jc.get("stakeholder_relations", "—"))
+    meta_table.add_row("Top concepts:",   concepts_text)
+
+    meta_panel = Panel(
+        meta_table,
+        title=f"[bold {color_style}]Job Character[/bold {color_style}]",
+        title_align="left",
+        border_style=color_style,
+        padding=(1, 1),
+        expand=True,
+    )
+
+    # ── 3. RIASEC Grid ────────────────────────────────────────────────────────
+    riasec_table = Table(box=box.SIMPLE, show_header=True, expand=True)
+    riasec_table.add_column("Dimension", style="bold white", no_wrap=True)
+    riasec_table.add_column("Level",     style="white",      no_wrap=True)
+    riasec_table.add_column("Evidence",  style="white")
+
+    for dim in ("investigative", "artistic", "enterprising", "conventional", "social"):
+        entry = riasec.get(dim, {})
+        level = entry.get("level", "—")
+        evidence = entry.get("evidence", "—")
+        level_style = _LEVEL_COLOR.get(level, "white")
+        riasec_table.add_row(
+            dim.capitalize(),
+            f"[{level_style}]{level.upper()}[/{level_style}]",
+            evidence,
+        )
+
+    riasec_panel = Panel(
+        riasec_table,
+        title=f"[bold {color_style}]RIASEC Fit[/bold {color_style}]",
+        title_align="left",
+        border_style=color_style,
+        padding=(1, 1),
+        expand=True,
+    )
+
+    # ── Stack: overall → job character → riasec ───────────────────────────────
+    return Group(overall_panel, meta_panel, riasec_panel)
+
+
 def _display_oracle_result(
     result: dict,
     extract: bool,
@@ -254,7 +355,8 @@ def _display_oracle_result(
     select_background: bool,
     select_skills: bool = False,
     select_core_strengths: bool = False,
-    select_summary: bool = False
+    select_summary: bool = False,
+    analyze_fit: bool = False
 ) -> None:
     """
     Display all information collected by oracle commands as structured panels.
@@ -343,6 +445,12 @@ def _display_oracle_result(
             console.print(panel)
             console.print()
 
+    if analyze_fit:
+        panel = _fit_panel(result, oracle_color)
+        if panel is not None:
+            console.print(panel)
+            console.print()
+
 
 def _display_updated_fields(updated: dict) -> None:
     """
@@ -380,7 +488,8 @@ def _show_active_modes(
     select_background: bool,
     select_skills: bool = False,
     select_core_strengths: bool = False,
-    select_summary: bool = False
+    select_summary: bool = False,
+    analyze_fit: bool = False
 ) -> list[str]:
     active: list[str] = []
 
@@ -398,6 +507,8 @@ def _show_active_modes(
         active.append("selecting and ranking relevant core strengths")
     if select_summary:
         active.append("selecting best possible summary and adding tailored sentence")
+    if analyze_fit:
+        active.append("evaluating the job add and your match to it from RIASEC perspective")
 
     console.print()
 

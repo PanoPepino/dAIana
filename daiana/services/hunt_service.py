@@ -10,6 +10,7 @@ from rich.text import Text
 
 from daiana.services.compile_service import compile_with_data
 from daiana.services.oracle_service import run_oracle_pipeline, edit_oracle_dict
+from daiana.infra.prompt_repository import make_prompt_repository
 from daiana.services.save_service import save_job_in_csv
 from daiana.infra.filesystem import open_with_default_app
 from daiana.utils.design.ui import rgb, _panel, _display_oracle_result
@@ -44,7 +45,7 @@ def run_hunt_flow(url: str,
         extract = cv or cl
         select_projects = cv or cl
         select_background = cl
-        tailor_sentence = cl
+        tailor_sentence = cl or cv
         select_skills = cv
         select_core_strengths = cv
         select_summary = cv
@@ -117,6 +118,13 @@ def _show_hunt_intro(cv: bool, cl: bool) -> None:
 
 
 def _maybe_edit_oracle_result(result: dict) -> None:
+    from daiana.services.oracle_service import (
+        _render_skills_latex, _render_core_strengths_latex,
+        _SKILLS_LATEX_KEY, _CORE_STRENGTHS_LATEX_KEY, _SUMMARY_LATEX_KEY,
+        _SKILL_DISPLAY_SLOTS, _CORE_STRENGTH_SLOTS,
+        make_prompt_repository
+    )
+
     editable = {k: v for k, v in result.items()
                 if k not in NON_EDITABLE and k not in HIDDEN_FROM_EDITOR}
     if not editable:
@@ -124,8 +132,30 @@ def _maybe_edit_oracle_result(result: dict) -> None:
     console.print(f"Would you like to [{rgb(UPDATE)}]modify[/{rgb(UPDATE)}] this information?")
     if not typer.confirm("Modify fields", default=False):
         return
+
     updated = edit_oracle_dict(editable)
     result.update(updated)
+
+    # Re-render skills
+    if _SKILL_DISPLAY_SLOTS & set(updated):
+        result[_SKILLS_LATEX_KEY] = _render_skills_latex(result)
+
+    # Re-render core strengths
+    if _CORE_STRENGTH_SLOTS & set(updated):
+        result[_CORE_STRENGTHS_LATEX_KEY] = _render_core_strengths_latex(result)
+
+    # Re-render summary (plain text, passes through directly)
+    if _SUMMARY_LATEX_KEY in updated:
+        result[_SUMMARY_LATEX_KEY] = updated[_SUMMARY_LATEX_KEY]
+
+    # Resolve project plain names → LaTeX commands
+    prompts_obj = make_prompt_repository()
+    name_to_latex = prompts_obj.as_json("projects/projects_name_to_latex")
+    for slot in ("project_one", "project_two", "project_three"):
+        plain = result.get(slot, "").strip()
+        if plain and not plain.startswith("\\"):  # ← only remap plain names
+            result[slot] = name_to_latex.get(plain, plain)
+
     console.print()
     console.print(_panel(
         "Updated fields to send to compiler",

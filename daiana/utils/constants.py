@@ -35,11 +35,7 @@ NON_EDITABLE = {
     "reason_selected_1",
     "reason_selected_2",
     "reason_selected_3",
-    "_core_strength_1",
-    "_core_strength_2",
-    "_core_strength_3",
-    "_core_strength_4",
-    "_core_strength_5",
+    '_fit_analysis'
 }
 
 
@@ -136,5 +132,6 @@ HIDDEN_FROM_EDITOR = frozenset({
     "selected_skills_latex",
     "_skill_cat_1", "_skill_cat_2", "_skill_cat_3", "_skill_cat_4",
     "_skill_items_1", "_skill_items_2", "_skill_items_3", "_skill_items_4",
-    "cv_heading_sentence",
+    'selected_core_strengths_latex',
+    '_fit_analysis'
 })

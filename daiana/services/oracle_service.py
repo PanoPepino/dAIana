@@ -4,9 +4,14 @@ All LLM calls, prompt composition, and oracle pipeline logic live here.
 No module-level file I/O; everything is lazy via PromptRepository.
 """
 from __future__ import annotations
+import shlex
 
 import json
 import re
+import os
+import tempfile
+import subprocess
+from pathlib import Path
 
 from openai import OpenAI
 from rich.console import Console
@@ -44,6 +49,9 @@ _SKILL_DISPLAY_SLOTS: frozenset[str] = frozenset(
     key
     for i in range(1, 5)
     for key in (f"_skill_cat_{i}", f"_skill_items_{i}")
+)
+_CORE_STRENGTH_SLOTS: frozenset[str] = frozenset(
+    f"core_strength_{i}" for i in range(1, 6)
 )
 
 
@@ -151,17 +159,33 @@ def normalize_project_selection(selection: dict) -> dict:
 
 def edit_oracle_dict(job: dict) -> dict:
     console.print()
-    console.print(f"[{rgb(COMMAND_COLORS['update'])}]Review each field (Enter to keep).[/{rgb(COMMAND_COLORS['update'])}]")
-    console.print()
-    for key in job.keys():
-        current = str(job.get(key) or "")
-        new_value = Prompt.ask(f"[bold white]{key:14}[/bold white]", default=current, show_default=True).strip()
-        if new_value:
-            job[key] = new_value
+    editor = os.environ.get("EDITOR") or os.environ.get("VISUAL") or "nano"
+
+    tmp = tempfile.NamedTemporaryFile(
+        mode='w', suffix='.json', delete=False, encoding='utf-8'
+    )
+    json.dump(job, tmp, indent=2, ensure_ascii=False)
+    tmp.close()
+    tmp_path = tmp.name
+
+    try:
+        cmd = shlex.split(editor) + [tmp_path]
+        subprocess.call(cmd)
+        with open(tmp_path, encoding='utf-8') as f:
+            updated = json.load(f)
+    except (json.JSONDecodeError, FileNotFoundError) as exc:
+        console.print(f"[bold red]Editor error: {exc}. Original values kept.[/bold red]")
+        return job
+    finally:
+        Path(tmp_path).unlink(missing_ok=True)
+
+    for k in job:
+        if k in updated:
+            job[k] = str(updated[k]).strip() or job[k]
     return job
 
-
 # ── LLM request helpers ───────────────────────────────────────────────────────
+
 
 def _chat(client: OpenAI, model: str, system: str, user: str, temperature: float = 0.0) -> str:
     resp = client.chat.completions.create(
@@ -312,7 +336,7 @@ def _render_core_strengths_latex(selected: dict) -> str:
     for i in range(1, 6):
         category = (
             selected.get(f"selected_{i}_core_strength")
-            or selected.get(f"_core_strength_{i}", "")
+            or selected.get(f"core_strength_{i}", "")
         ).strip()
         if category:
             safe_category = latex_escape(category)
@@ -347,6 +371,16 @@ def select_summary(
     return validate_summary_data(parse_oracle_json(raw))
 
 
+def analyze_fit(job_text: str,
+                client: OpenAI, model: str,
+                prompts: PromptRepository) -> dict:
+    system = prompts.fit_prompt()
+    profile = prompts.fit_payload()
+    user = f"Candidate profile:\n{profile}\n\nJob advertisement:\n{job_text}"
+    raw = _chat(client, model, system, user, temperature=0.1)
+    return parse_oracle_json(raw)
+
+
 # ── Main pipeline ─────────────────────────────────────────────────────────────
 
 def run_oracle_pipeline(
@@ -359,6 +393,7 @@ def run_oracle_pipeline(
     select_skills_flag: bool = False,
     select_core_strengths_flag: bool = False,
     select_summary_flag: bool = False,
+    analyze_fit_flag: bool = False,
     client: OpenAI | None = None,
     model: str | None = None,
 ) -> dict:
@@ -368,7 +403,8 @@ def run_oracle_pipeline(
                 select_background_flag,
                 select_skills_flag,
                 select_core_strengths_flag,
-                select_summary_flag]):
+                select_summary_flag,
+                analyze_fit_flag]):
         raise ValueError("At least one mode must be enabled.")
 
     settings = load_settings()
@@ -403,7 +439,7 @@ def run_oracle_pipeline(
         raw_core_strengths = select_core_strengths(job_text, _client, _model, prompts)
         result[_CORE_STRENGTHS_LATEX_KEY] = _render_core_strengths_latex(raw_core_strengths)
         for i in range(1, 6):
-            result[f'_core_strength_{i}'] = raw_core_strengths.get(f"selected_{i}_core_strength", "")
+            result[f'core_strength_{i}'] = raw_core_strengths.get(f"selected_{i}_core_strength", "")
 
     if select_summary_flag:
         career = result.get("career", "")
@@ -415,7 +451,9 @@ def run_oracle_pipeline(
         summary_data = select_summary(job_text, career, _client, _model, prompts)
         result[_SUMMARY_LATEX_KEY] = summary_data['selected_summary']
 
-    print(result)
+    if analyze_fit_flag:
+        fit_data = analyze_fit(job_text, _client, _model, prompts)
+        result['_fit_analysis'] = fit_data
 
     return result
 
@@ -429,7 +467,8 @@ def run_oracle_flow(
     select_background: bool,
     select_skills: bool = False,
     select_core_strengths: bool = False,
-    select_summary: bool = False
+    select_summary: bool = False,
+    analyze_fit: bool = False,
 ) -> None:
     if not any([extract,
                 tailor_sentence,
@@ -438,10 +477,19 @@ def run_oracle_flow(
                 select_skills,
                 select_core_strengths,
                 select_summary]):
+        console.print("")
         console.print(
-            "[bold red]Use at least one flag: --extract, --tailor_sentence, --select_projects, "
-            "--select_background, --select_skills, --select_core_strengths, --select_summary[/bold red]"
+            "[bold red]Use at least one flag: "
+            "--extract, "
+            "--tailor_sentence, "
+            "--select_projects, "
+            "--select_background, "
+            "--select_skills, "
+            "--select_core_strengths, "
+            "--select_summary, "
+            "--analyze_fit[/bold red]"
         )
+        console.print('')
         raise typer.Exit(code=1)
 
     _show_active_modes(
@@ -466,7 +514,8 @@ def run_oracle_flow(
                 select_background_flag=select_background,
                 select_skills_flag=select_skills,
                 select_core_strengths_flag=select_core_strengths,
-                select_summary_flag=select_summary
+                select_summary_flag=select_summary,
+                analyze_fit_flag=analyze_fit
             )
     except (ValueError, Exception) as exc:
         console.print(f"[bold red]Oracle failed: {exc}[/bold red]")
@@ -480,29 +529,47 @@ def run_oracle_flow(
     _display_oracle_result(
         result=result,
         extract=extract,
-        tailor_sentence=tailor_sentence,
-        select_projects=select_projects,
-        select_background=select_background,
-        select_skills=select_skills,
+        analyze_fit=analyze_fit,
+        select_summary=select_summary,
         select_core_strengths=select_core_strengths,
-        select_summary=select_summary
+        select_projects=select_projects,
+        select_skills=select_skills,
+        tailor_sentence=tailor_sentence,
+        select_background=select_background
     )
 
     # Build editable dict: exclude the rendered LaTeX block (raw and opaque),
     # but keep the human-readable _skill_cat_N / _skill_items_N slots so the
     # user can tweak individual categories before passing to compiler.
+
+    _LATEX_KEYS = {_SKILLS_LATEX_KEY, _CORE_STRENGTHS_LATEX_KEY}
     editable = {
         k: v
         for k, v in result.items()
-        if k not in NON_EDITABLE and k != _SKILLS_LATEX_KEY
+        if k not in NON_EDITABLE and k not in _LATEX_KEYS
     }
 
     if editable and typer.confirm("Modify fields", default=False):
         updated = edit_oracle_dict(editable)
         result.update(updated)
 
-        # If any skill display slot was touched, re-render the latex block.
+        # Re-render core strengths from edited plain-text slots
+        if _CORE_STRENGTH_SLOTS & set(updated):
+            result[_CORE_STRENGTHS_LATEX_KEY] = _render_core_strengths_latex(result)
+
+        # Re-render skills from edited display slots
         if _SKILL_DISPLAY_SLOTS & set(updated):
             result[_SKILLS_LATEX_KEY] = _render_skills_latex(result)
 
+        # Re-render summary (already plain text, passes through directly)
+        if _SUMMARY_LATEX_KEY in updated:
+            result[_SUMMARY_LATEX_KEY] = updated[_SUMMARY_LATEX_KEY]
+
         _display_updated_fields(updated)
+
+    prompts_obj = make_prompt_repository()
+    name_to_latex = prompts_obj.as_json("projects/projects_name_to_latex")
+    for slot in ("project_one", "project_two", "project_three"):
+        plain = result.get(slot, "").strip()
+        if plain:
+            result[slot] = name_to_latex.get(plain, plain)

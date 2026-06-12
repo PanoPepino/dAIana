@@ -38,6 +38,8 @@ def oracle(
                                                help="Select and rank the most relevant core strengths for this job."),
     select_summary: bool = typer.Option(False, "--select_summary",
                                                help="Select the best possible summary for a given position and modify adding company name + challenge."),
+    analyze_fit: bool = typer.Option(False, "--analyze_fit",
+                                     help="Analyze job add, compare to RIASEC profile and evaluate your fit in such job."),
 ) -> None:
     console.print('')
     ui.rule("dAIana oracle", color=COMMAND_COLORS['oracle'])
@@ -53,6 +55,7 @@ def oracle(
         select_background=select_background,
         select_skills=select_skills,
         select_core_strengths=select_core_strengths,
-        select_summary=select_summary
+        select_summary=select_summary,
+        analyze_fit=analyze_fit
     )
     console.print('')

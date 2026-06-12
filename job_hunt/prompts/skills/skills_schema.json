@@ -1,0 +1,10 @@
+{
+  "selected_1_category": "exact category name from the inventory",
+  "selected_1_items": "comma-separated items, most relevant first",
+  "selected_2_category": "exact category name from the inventory",
+  "selected_2_items": "comma-separated items, most relevant first",
+  "selected_3_category": "exact category name from the inventory",
+  "selected_3_items": "comma-separated items, most relevant first",
+  "selected_4_category": "exact category name from the inventory",
+  "selected_4_items": "comma-separated items, most relevant first"
+}
