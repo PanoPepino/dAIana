@@ -9,6 +9,7 @@ components without touching unrelated code.
 
    daiana/
    ├── cli.py                  # Entry point — registers all Click commands
+   ├── oracle.py               # Candidate profile + fit-analysis prompt builder
    ├── commands/               # Thin Click command wrappers
    ├── config/                 # Settings and environment loading
    ├── core/                   # Business logic (one module per command)
@@ -24,6 +25,34 @@ components without touching unrelated code.
 The single entry point declared in ``pyproject.toml``. Imports every
 sub-command from ``commands/`` and registers it on the root ``@cli`` group.
 You never need to edit this file unless you add a brand-new top-level command.
+
+
+``oracle.py``
+-------------
+
+Defines the candidate profile used for RIASEC fit analysis and the prompt
+builder that assembles the LLM payload at runtime.
+
+.. list-table::
+   :widths: 30 70
+   :header-rows: 1
+
+   * - Symbol
+     - Purpose
+   * - ``CandidateProfile``
+     - Frozen dataclass holding RIASEC code, summary, strengths, and risks.
+   * - ``DANIEL_PROFILE``
+     - Default candidate instance. Edit this to customise the profile used
+       for fit scoring.
+   * - ``ORACLE_SYSTEM_PROMPT``
+     - Compact system prompt sent to the LLM. Defines the output JSON schema
+       and scoring rules.
+   * - ``build_job_oracle_prompt()``
+     - Serialises the candidate profile + job ad text into the user message
+       sent alongside ``ORACLE_SYSTEM_PROMPT``.
+
+To customise fit analysis for a different candidate, edit ``DANIEL_PROFILE``
+in ``daiana/oracle.py`` — no other files need changing.
 
 
 commands/
@@ -48,7 +77,7 @@ matching service. No business logic lives here.
    * - ``init_comm.py``
      - ``daiana init`` — scaffolds the project folder
    * - ``oracles_comm.py``
-     - ``daiana oracle`` — asks the LLM a free-form question
+     - ``daiana oracle`` — extract, tailor, and analyse job fit from a URL
    * - ``saver_comm.py``
      - ``daiana save`` — saves a job to the CSV tracker
    * - ``shower_comm.py``
@@ -85,7 +114,8 @@ Click or the file system — it receives plain Python objects and returns them.
    * - ``initer.py``
      - Generates the scaffold folder and starter files
    * - ``oracles.py``
-     - Sends a free-form prompt to the LLM and returns the response
+     - Sends oracle prompts to the LLM; routes results to fit analysis
+       when ``--analyze_fit`` is active
    * - ``saver.py``
      - Validates and appends a job record to the CSV tracker
    * - ``shower.py``
@@ -152,7 +182,9 @@ unit-testable without mocking I/O.
    * - ``init_service.py``
      - filesystem helpers → initer logic
    * - ``oracle_service.py``
-     - prompt_repository → llm_client → oracles core
+     - prompt_repository → llm_client → oracles core; calls
+       ``build_job_oracle_prompt()`` when ``analyze_fit_flag`` is set
+       and stores the result under ``_fit_analysis`` in the result dict
    * - ``save_service.py``
      - validation → csv_repository
    * - ``show_service.py``

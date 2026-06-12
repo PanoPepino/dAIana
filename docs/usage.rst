@@ -174,7 +174,7 @@ tailoring without compiling PDFs.
 
 At least one of ``--extract``, ``--tailor_sentence``, ``--select_projects``,
 ``--select_background``, ``--select_skills``, ``--select_core_strengths``,
-or ``--select_summary`` must be passed.
+``--select_summary``, or ``--analyze_fit`` must be passed.
 
 .. code-block:: bash
 
@@ -183,6 +183,8 @@ or ``--select_summary`` must be passed.
    daiana oracle --url "https://jobs.example.com/role" --extract --select_core_strengths
    daiana oracle --url "https://jobs.example.com/role" --extract --select_summary
    daiana oracle --url "https://jobs.example.com/role" --extract --select_skills --select_projects
+   daiana oracle --url "https://jobs.example.com/role" --extract --analyze_fit
+   daiana oracle --url "https://jobs.example.com/role" --analyze_fit
 
 **Flags**
 
@@ -215,6 +217,11 @@ or ``--select_summary`` must be passed.
      - Select and tailor the best summary template for the target career and
        company. Requires ``--extract`` to be run in the same invocation so
        that the career path can be determined.
+   * - ``--analyze_fit``
+     - Run a RIASEC-based candidate–role fit analysis against the job posting.
+       Displays an **Overall** score panel, a **Job Character** panel, and a
+       **RIASEC Fit** breakdown panel. Can be combined with ``--extract`` or
+       used standalone.
 
 .. note::
 
@@ -262,6 +269,31 @@ or ``--select_summary`` must be passed.
    To customise the base summary, edit
    ``prompts/summary/summary_<career>.md`` in your ``job_hunt/`` folder.
    One file per career slug (e.g. ``summary_software.md``, ``summary_data.md``).
+
+.. note::
+
+   **How ``--analyze_fit`` works**
+
+   1. dAIana sends the scraped job text together with a compact candidate
+      profile (RIASEC code, strengths, and risk factors) to the LLM.
+   2. The LLM returns a structured JSON object covering company values,
+      role character (working style, thinking style, collaboration,
+      stakeholder relations), the top 3 repeated concepts in the ad, and
+      a per-dimension RIASEC alignment score.
+   3. Three Rich panels are displayed in the terminal:
+
+      - **Overall** — fit score (0–100, colour-coded green/yellow/red),
+        one-line fit summary, and one-line blind spot.
+      - **Job Character** — company values, working style, thinking style,
+        collaboration pattern, stakeholder relations, and top 3 concepts.
+      - **RIASEC Fit** — a table with one row per dimension
+        (Investigative, Artistic, Enterprising, Conventional, Social),
+        showing HIGH / MEDIUM / LOW alignment and the evidence extracted
+        from the job ad.
+
+   The candidate profile used for scoring is defined in
+   ``daiana/oracle.py`` (``DANIEL_PROFILE``) and can be edited to
+   reflect any candidate's RIASEC code, strengths, and risk areas.
 
 This command is useful when you want the AI output but do not want to
 compile a PDF yet.
