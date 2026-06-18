@@ -42,6 +42,20 @@ NON_EDITABLE = {
 EDITABLE_FIELDS = [field for field in FIELDNAMES if field != "history"]
 
 
+# ── Network contacts ──────────────────────────────────────────────────────────
+# Fields for the global contacts.csv table (career-agnostic).
+CONTACT_FIELDNAMES = [
+    "contact_name",   # Full name of the person
+    "company",        # Company they work at
+    "location",       # City / country
+    "email",          # Contact email
+    "date_of_contact", # ISO date of first/last interaction
+]
+
+# Fields the user can edit via `daiana contacts update --field`
+EDITABLE_CONTACT_FIELDS = list(CONTACT_FIELDNAMES)  # all fields are editable
+
+
 MODE_CONFIG = {
     "cv": {
         "template": Path("cv_and_letter/template_cv.tex"),

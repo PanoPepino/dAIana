@@ -7,7 +7,7 @@ import re
 from datetime import date
 from pathlib import Path
 
-from daiana.utils.constants import FIELDNAMES
+from daiana.utils.constants import FIELDNAMES, CONTACT_FIELDNAMES
 
 
 def rewrite_filename(name: str) -> str:
@@ -25,8 +25,73 @@ def get_tracking_dir() -> Path:
 
 
 def csv_path_for(career: str) -> Path:
+    """Resolve the jobs CSV path for a given career slug."""
     return get_tracking_dir() / f"{rewrite_filename(career)}_jobs.csv"
 
+
+# ── Contacts: fixed global path ───────────────────────────────────────────────
+
+def contacts_csv_path() -> Path:
+    """
+    Return the fixed path for the global contacts table.
+    Contacts are career-agnostic — always stored at job_tracking/contacts.csv.
+    """
+    return get_tracking_dir() / "contacts.csv"
+
+
+def save_contact(contact_name: str, company: str, location: str,
+                 email: str, date_of_contact: str) -> Path:
+    """
+    Append a new contact row to contacts.csv.
+    Creates the file with headers if it does not exist yet.
+    """
+    path = contacts_csv_path()
+    contact_info = {
+        "contact_name": contact_name,
+        "company": company,
+        "location": location,
+        "email": email,
+        "date_of_contact": date_of_contact,
+    }
+    file_exists = path.exists()
+    with path.open("a", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=CONTACT_FIELDNAMES)
+        # Write header only once, when the file is first created
+        if not file_exists:
+            writer.writeheader()
+        writer.writerow(contact_info)
+    return path
+
+
+def load_contacts() -> tuple[list[dict], Path]:
+    """
+    Load all rows from contacts.csv.
+    Raises FileNotFoundError if no contacts have been saved yet.
+    """
+    path = contacts_csv_path()
+    if not path.exists():
+        raise FileNotFoundError(
+            f"No contacts file found at {path}. "
+            "Save a contact first with: daiana contacts save"
+        )
+    with path.open("r", newline="", encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
+    return rows, path
+
+
+def write_contacts(rows: list[dict]) -> None:
+    """
+    Overwrite contacts.csv with the given list of rows.
+    Used by the update/erase flow after in-memory modifications.
+    """
+    path = contacts_csv_path()
+    with path.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=CONTACT_FIELDNAMES, extrasaction="ignore")
+        writer.writeheader()
+        writer.writerows(rows)
+
+
+# ── Jobs (unchanged) ──────────────────────────────────────────────────────────
 
 def save_job(career: str, job_position: str, company_name: str,
              location: str, job_link: str) -> Path:

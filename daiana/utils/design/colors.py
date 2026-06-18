@@ -11,7 +11,9 @@ COMMAND_COLORS: dict[str, tuple[int, int, int]] = {
     "oracle": (230, 190, 60),
     "compile": (30, 170, 240),
     "init": (220, 220, 0),
-    "check": (100, 150, 150)
+    "check": (100, 150, 150),
+    # Contacts network tracker — light sky blue
+    "contacts": (100, 180, 240),
 }
 
 STATUS_COLORS: dict[str, tuple[int, int, int]] = {

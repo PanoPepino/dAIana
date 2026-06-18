@@ -138,6 +138,52 @@ def jobs_table(rows_data: list[dict]) -> Table:
     return table
 
 
+# ── Contacts table ────────────────────────────────────────────────────────────
+
+def contacts_table(rows_data: list[dict]) -> Table:
+    """
+    Render the network contacts as a Rich table.
+    Mirrors the structure of jobs_table() but uses the contacts color palette
+    and the five contact-specific columns.
+    """
+    CONTACTS_COLOR = rgb(COMMAND_COLORS['contacts'])
+
+    table = Table(
+        box=box.ROUNDED,
+        border_style=CONTACTS_COLOR,
+        header_style=f"bold {CONTACTS_COLOR}",
+        show_lines=False,
+        expand=True,
+        pad_edge=False,
+        padding=(0, 1),
+    )
+
+    # Column definitions — widths balanced for a typical terminal
+    table.add_column("Contact",         justify="left", no_wrap=False, min_width=14, max_width=22)
+    table.add_column("Company",         justify="left", no_wrap=False, min_width=14, max_width=20)
+    table.add_column("Location",        justify="left", no_wrap=False, min_width=10, max_width=16)
+    table.add_column("Email",           justify="left", no_wrap=False, min_width=18, max_width=28)
+    table.add_column("Date of Contact", justify="left", no_wrap=False, min_width=12, max_width=12)
+
+    for row in rows_data:
+        # Trim values defensively to avoid overflowing the table
+        name     = (row.get("contact_name")    or "").strip()[:30]
+        company  = (row.get("company")         or "").strip()[:25]
+        location = (row.get("location")        or "").strip()[:20]
+        email    = (row.get("email")           or "").strip()[:35]
+        date     = (row.get("date_of_contact") or "").strip()[:12]
+
+        table.add_row(
+            Text(name,     style="white"),
+            Text(company,  style="white"),
+            Text(location, style="white"),
+            Text(email,    style=f"dim {CONTACTS_COLOR}"),   # email in accent dim
+            Text(date,     style="white"),
+        )
+
+    return table
+
+
 # ── Validation ────────────────────────────────────────────────────────────────
 
 def _validate_mode(status: bool, field: bool, erase: bool) -> None:

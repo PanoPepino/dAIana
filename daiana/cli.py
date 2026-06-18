@@ -40,15 +40,16 @@ def root(
         return
 
     commands = [
-        HelpCommand(name="init", summary="Prepare your set up to start hunting jobs!", panel="init"),
-        HelpCommand(name="check", summary="Test if your set up is right before start hunting!", panel="init"),
-        HelpCommand(name="show", summary="Do you want to see your latest hunt trophies? Show it!", panel="show"),
-        HelpCommand(name="save", summary="A new job hunt trophy to add to the records? Add it!", panel="save"),
-        HelpCommand(name="update", summary="Information to be updated for your latest prey? Update it!", panel="update"),
-        HelpCommand(
-            name="compile", summary="Do you want to craft new weapons, cv and cover letter, for your next hunt? Craft it!", panel="compile"),
-        HelpCommand(name="oracle", summary="Willing to get guidance from the AI oracle for next hunt? Ask it!", panel="oracle"),
-        HelpCommand(name="hunt", summary="Ask guidance. Craft weapons. Track job preys. Hunt!", panel="hunt"),
+        HelpCommand(name="init",     summary="Prepare your set up to start hunting jobs!",                          panel="init"),
+        HelpCommand(name="check",    summary="Test if your set up is right before start hunting!",                  panel="init"),
+        HelpCommand(name="show",     summary="Do you want to see your latest hunt trophies? Show it!",              panel="show"),
+        HelpCommand(name="save",     summary="A new job hunt trophy to add to the records? Add it!",                panel="save"),
+        HelpCommand(name="update",   summary="Information to be updated for your latest prey? Update it!",          panel="update"),
+        HelpCommand(name="compile",  summary="Do you want to craft new weapons, cv and cover letter, for your next hunt? Craft it!", panel="compile"),
+        HelpCommand(name="oracle",   summary="Willing to get guidance from the AI oracle for next hunt? Ask it!",   panel="oracle"),
+        HelpCommand(name="hunt",     summary="Ask guidance. Craft weapons. Track job preys. Hunt!",                 panel="hunt"),
+        # Network contacts — career-agnostic, global contacts.csv
+        HelpCommand(name="contacts", summary="Track people you met during your job hunt. Grow your network!",       panel="contacts"),
     ]
 
     ui.help_screen(commands)
@@ -71,6 +72,7 @@ app.add_typer(
 def register_other_commands() -> None:
     from daiana.commands import (
         compiler_comm,
+        contacts_comm,
         hunter_comm,
         oracler_comm,
         saver_comm,
@@ -78,14 +80,14 @@ def register_other_commands() -> None:
         updater_comm,
     )
 
-    app.add_typer(shower_comm.app, name="show", help="Do you want to see your latest hunt trophies? Show it!")
-    app.add_typer(saver_comm.app, name="save", help="A new job hunt trophy to add to the records? Add it!")
-    app.add_typer(updater_comm.app, name="update", help="Information to be updated for your latest prey? Update it!")
-    app.add_typer(compiler_comm.app, name="compile",
-                  help="Do you want to craft new weapons for your next hunt? Craft it!")
-    app.add_typer(oracler_comm.app, name="oracle",
-                  help="Willing to get guidance from the AI oracle for next hunt? Ask it!")
-    app.add_typer(hunter_comm.app, name="hunt", help="Ask guidance. Craft weapons. Track job preys. Hunt!")
+    app.add_typer(shower_comm.app,   name="show",     help="Do you want to see your latest hunt trophies? Show it!")
+    app.add_typer(saver_comm.app,    name="save",     help="A new job hunt trophy to add to the records? Add it!")
+    app.add_typer(updater_comm.app,  name="update",   help="Information to be updated for your latest prey? Update it!")
+    app.add_typer(compiler_comm.app, name="compile",  help="Do you want to craft new weapons for your next hunt? Craft it!")
+    app.add_typer(oracler_comm.app,  name="oracle",   help="Willing to get guidance from the AI oracle for next hunt? Ask it!")
+    app.add_typer(hunter_comm.app,   name="hunt",     help="Ask guidance. Craft weapons. Track job preys. Hunt!")
+    # Contacts: global network tracker, no --career flag needed
+    app.add_typer(contacts_comm.app, name="contacts", help="Track people you met during your job hunt. Grow your network!")
 
 
 register_other_commands()
